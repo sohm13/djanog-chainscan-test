@@ -24,7 +24,7 @@ class BaseTransaction(models.Model):
     class Meta:
         abstract = True
 
-class BSC(BaseTransaction):
+class BSCTransaction(BaseTransaction):
     class Meta(BaseTransaction.Meta):
-        db_table = 'BSC'
+        db_table = 'BSCTransaction'
 

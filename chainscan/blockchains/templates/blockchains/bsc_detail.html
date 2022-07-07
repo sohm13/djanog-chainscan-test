@@ -1,0 +1,35 @@
+{% extends 'blockchains/base.html' %}
+
+{% block title %}
+    bsc list
+{% endblock %}
+
+{% block context %}
+    <h2> Transactions  detail {{ transaction.hash }} <a href="{% url 'blockchains:bsc-list' %}"> back </a> </h2>
+<ul>
+    <table class="table table-bordered  table-striped">
+    <thead>
+        <tr>
+          <th scope="col">Block</th>
+          <th scope="col">Hash</th>
+          <th scope="col">Time</th>
+          <th scope="col">Logs</th>
+          <th scope="col">Data</th>
+        </tr>
+      </thead>
+    <tbody>
+        <tr>
+          <td > {{ transaction.block_number}} </td>
+          <td> {{ transaction.hash}} </td>
+          <td> {{ transaction.updated_at}} </td>
+          <td> {{ transaction.logs}} </td>
+          <td> {{ transaction.data_input}} </td>
+
+        </tr>
+</tbody>
+</table>
+
+
+</ul>
+    
+{% endblock %}

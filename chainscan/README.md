@@ -1,12 +1,3 @@
-models:
-[user] - [FitlerLog]
-            |
-        [transaction]
-
-
-templates:
-[user.html] - [pairs.html] - [add-pair]-
-
 
 apps:
     [desktop]
@@ -31,4 +22,3 @@ apps:
                 /models
                     - [Bsc, Aurora]
     
-
