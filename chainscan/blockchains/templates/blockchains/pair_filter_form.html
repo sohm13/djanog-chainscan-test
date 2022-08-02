@@ -1,0 +1,22 @@
+{% extends 'blockchains/base.html' %}
+
+{% block title %}
+ pair form
+{% endblock %}
+
+{% block context %}
+
+<div>
+
+
+    <form action="{% url 'blockchains:pair-balances' %}" method="POST">{% csrf_token %}
+        {{ form.as_p }}
+        <input type="submit" value="Send message">
+    </form>
+
+
+</div>
+
+
+
+{% endblock%}

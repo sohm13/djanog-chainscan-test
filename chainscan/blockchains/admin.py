@@ -1,6 +1,7 @@
 from django.contrib import admin
 
-from .models import BSCTransaction
+from .models import BSCPair, BSCPairTransaction
 
 
-admin.site.register(BSCTransaction)
+admin.site.register(BSCPair)
+admin.site.register(BSCPairTransaction)

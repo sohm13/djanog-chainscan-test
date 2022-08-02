@@ -1,0 +1,47 @@
+{% extends 'blockchains/base.html' %}
+
+{% block title %}
+    bsc list
+{% endblock %}
+
+{% block context %}
+
+<div class="container-fluid">  
+  <h2> Pairs  </h2>
+
+  {{ df|safe }}
+</div>
+<ul>
+    <table class="table table-bordered  table-striped">
+    <thead>
+        <tr>
+          <th scope="col"> Block </th>
+          <th scope="col"> Tx index in Block </th>
+          <th scope="col">Pair Address </th>
+          <th scope="col">Reserve0 </th>
+          <th scope="col">Reserve1 </th>
+          <th scope="col">Price </th>
+          <th scope="col">hash</th>
+        </tr>
+      </thead>
+    <tbody>
+    {% for transaction in transcations %}
+        <tr>
+          <td > {{ transaction.block_number}}  </td>
+          <td > {{ transaction.transaction_index}}  </td>
+          <td > {{ transaction.pair_address}}  </td>
+          <td > {{ transaction.reserve0}}  </td>
+          <td > {{ transaction.reserve1}}  </td>
+          <td > {{ 0}}  </td>
+          <td > {{ transaction.hash}}  </td>
+
+        </tr>
+    {% endfor %}
+
+</tbody>
+</table>
+
+
+</ul>
+    
+{% endblock %}
