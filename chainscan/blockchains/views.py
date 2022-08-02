@@ -24,7 +24,7 @@ def index(request):
 class BscListView(ListView):
     model = BSCPair
     template_name = 'blockchains/bsc_list.html'
-    context_object_name = 'transcations'
+    context_object_name = 'pairs'
     paginate_by = 10
 
 
