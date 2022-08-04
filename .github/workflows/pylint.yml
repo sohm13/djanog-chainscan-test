@@ -20,7 +20,10 @@ jobs:
         pip install pylint
         pip install -r requirements.txt
     - name: Django test
-      run: python manage.py test
+      run: |
+        ls
+        cd chainscan 
+        python manage.py test
     - name: Analysing the code with pylint
       run: pylint $(git ls-files '*.py')
 
