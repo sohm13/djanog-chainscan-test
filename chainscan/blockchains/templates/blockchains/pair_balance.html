@@ -7,41 +7,34 @@
 {% block context %}
 
 <div class="container-fluid">  
-  <h2> Pairs  </h2>
-
-  {{ df|safe }}
+  <h2> Pairs </h2> 
+  <h6>{{info}} </h6>
 </div>
+
 <ul>
-    <table class="table table-bordered  table-striped">
+  <table class="table table-bordered  table-striped">
     <thead>
-        <tr>
-          <th scope="col"> Block </th>
-          <th scope="col"> Tx index in Block </th>
-          <th scope="col">Pair Address </th>
-          <th scope="col">Reserve0 </th>
-          <th scope="col">Reserve1 </th>
-          <th scope="col">Price </th>
-          <th scope="col">hash</th>
-        </tr>
-      </thead>
+      <tr>
+        {% for col in df.columns %}
+          <th scope="col">
+            {{col}}
+          </th>
+        {% endfor %}
+      </tr>
+    </thead>
     <tbody>
-    {% for transaction in transcations %}
+      {% for index, row in df.iterrows %}
         <tr>
-          <td > {{ transaction.block_number}}  </td>
-          <td > {{ transaction.transaction_index}}  </td>
-          <td > {{ transaction.pair_address}}  </td>
-          <td > {{ transaction.reserve0}}  </td>
-          <td > {{ transaction.reserve1}}  </td>
-          <td > {{ 0}}  </td>
-          <td > {{ transaction.hash}}  </td>
-
+          {% for cell in row %}
+            <td>
+              {{ cell }}
+            </td>
+          {% endfor %}
         </tr>
-    {% endfor %}
-
-</tbody>
-</table>
-
-
+      {% endfor %}
+    </tbody>
+  </table>
 </ul>
+
     
 {% endblock %}
