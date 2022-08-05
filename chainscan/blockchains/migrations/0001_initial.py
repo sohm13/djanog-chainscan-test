@@ -14,7 +14,12 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='BSC',
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('id', models.BigAutoField(
+                    auto_created=True, 
+                    primary_key=True, 
+                    serialize=False, 
+                    verbose_name='ID'
+                    )),
                 ('block_number', models.IntegerField(null=True)),
                 ('address_from', models.CharField(max_length=128, null=True)),
                 ('address_to', models.CharField(max_length=128, null=True)),

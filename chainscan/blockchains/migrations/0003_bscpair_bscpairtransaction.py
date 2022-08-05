@@ -14,7 +14,12 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='BSCPair',
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('id', models.BigAutoField(
+                            auto_created=True, 
+                            primary_key=True, 
+                            serialize=False, 
+                            verbose_name='ID'
+                            )),
                 ('created_at', models.DateTimeField(auto_created=True)),
                 ('factory_address', models.CharField(max_length=42)),
                 ('pair_address', models.CharField(max_length=42, unique=True)),
@@ -30,7 +35,12 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='BSCPairTransaction',
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('id', models.BigAutoField(
+                    auto_created=True, 
+                    primary_key=True, 
+                    serialize=False, 
+                    verbose_name='ID'
+                    )),
                 ('reserveToken0', models.CharField(default=0, max_length=256)),
                 ('reserveToken1', models.CharField(default=0, max_length=256)),
                 ('amount0In', models.CharField(max_length=256, null=True)),
