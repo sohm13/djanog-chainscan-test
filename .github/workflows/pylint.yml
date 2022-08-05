@@ -22,7 +22,6 @@ jobs:
     - name: Django test
       run: |
         cd chainscan 
-        python -c "import sys; print(sys.path)"
         python manage.py test
     - name: Analysing the code with pylint
       run: pylint $(git ls-files '*.py')
