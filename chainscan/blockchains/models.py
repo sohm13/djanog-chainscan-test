@@ -9,6 +9,7 @@ class BaseEthPair(models.Model):
     pair_symbol = models.CharField(max_length=12, blank=False, null=False, unique=True)
     token0 = models.CharField(max_length=42, blank=False, null=False)
     token1 = models.CharField(max_length=42, blank=False, null=False)
+    decimals = models.IntegerField(default=18)
     updated_at = models.DateTimeField(auto_created=True, null=True)
     
     class Meta:
