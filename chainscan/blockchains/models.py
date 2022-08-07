@@ -60,8 +60,14 @@ class BSCPairTransaction(BaseEthPairTransaction):
 
 
 class BscEthSyncEvent(BaseEthSyncEvent):
+
+    bsc_pair = models.ForeignKey(BSCPair, on_delete=models.CASCADE)
     class Meta(BaseEthSyncEvent.Meta):
-        db_table = 'BscEthSyncEvent'    
+        db_table = 'BscEthSyncEvent'
+
+    def __str__(self):
+        return f'block_number:{self.block_number}, transaction_index:{self.transaction_index}, pair_address:{self.pair_address}'
+
 
 
 
