@@ -20,7 +20,7 @@ class Command(BaseCommand):
 
         pairs_block_range = []
         last_block = self.INIT_BLOCK + 500
-        step = 5
+        step = 50
 
         for pair in pairs:
             pair_sync = BscEthSyncEvent.objects.filter(pair_address = pair.pair_address).last()
