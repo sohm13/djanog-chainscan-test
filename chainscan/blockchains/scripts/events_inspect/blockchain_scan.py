@@ -41,7 +41,7 @@ class BlockChainScan:
         events_return = self.get_sync_events(block_events)
         return events_return
 
-    def get_scan_event_from_blocks_async(self, block_start: int, block_end: int, pairs: list[Pair]) -> list[list[Optional[SyncEvent]]]:
+    def get_scan_event_from_blocks_async(self, pairs_block_range: list[list], pairs: list[Pair]) -> list[list[Optional[SyncEvent]]]:
         '''
         return [ 
                 [blocks SyncEvent], # pair[0]
@@ -49,7 +49,7 @@ class BlockChainScan:
                 ...
                 ]
         '''
-        blocks = [self.eth_event.sync_event_from_blocks_filter(pair.address, block_start, block_end) for pair in pairs]
+        blocks = [self.eth_event.sync_event_from_blocks_filter(pair.address, block_range[0], block_range[1]) for pair, block_range in zip(pairs, pairs_block_range)]
         tasks = [self.get_sync_events_async(block) for block in blocks]
         loop = asyncio.get_event_loop()
         try:

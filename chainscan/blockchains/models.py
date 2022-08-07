@@ -53,7 +53,7 @@ class BSCPair(BaseEthPair):
 
 
 class BSCPairTransaction(BaseEthPairTransaction):
-    pair = models.ForeignKey(BSCPair, on_delete=models.CASCADE)
+    pair = models.ForeignKey(BSCPair, on_delete=models.CASCADE, null=True)
 
     class Meta(BaseEthPairTransaction.Meta):
         db_table = 'BSCPairTransaction'
@@ -61,12 +61,13 @@ class BSCPairTransaction(BaseEthPairTransaction):
 
 class BscEthSyncEvent(BaseEthSyncEvent):
 
-    bsc_pair = models.ForeignKey(BSCPair, on_delete=models.CASCADE)
+    bsc_pair = models.ForeignKey(BSCPair, on_delete=models.CASCADE, null=True)
+
     class Meta(BaseEthSyncEvent.Meta):
         db_table = 'BscEthSyncEvent'
 
     def __str__(self):
-        return f'block_number:{self.block_number}, transaction_index:{self.transaction_index}, pair_address:{self.pair_address}'
+        return self.pair_address
 
 
 
