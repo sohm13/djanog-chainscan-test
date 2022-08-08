@@ -31,35 +31,41 @@ class BscListView(ListView):
 
 
 def pair_sync_event_to_df(pair: BscEthSyncEvent, decimals=18):
+    pre_to_pandas = [obj.__dict__ for obj in pair ]
+    # deep dependency
+    timestamps = [p.bsc_block.timestamp for p in pair]
+    symbols = [p.bsc_pair.pair_symbol for p in pair]
 
-        pre_to_pandas = [obj.__dict__ for obj in pair ]
-        df = pd.DataFrame(pre_to_pandas)
-        df['reserve0'] = df['reserve0'].astype(float) / (10 ** decimals)
-        df['reserve1'] = df['reserve1'].astype(float) / (10 ** decimals)
-        df['price'] = df['reserve0']/ df['reserve1']
-        df['token0'] = df['reserve1'] - df['reserve1'].shift(-1)
-        df['token1'] = df['reserve0'] - df['reserve0'].shift(-1)
-        # columns for display
-        df = df[[
-            'block_number', 
-            'transaction_index', 
-            'price', 
-            # 'pair_address', 
-            'reserve0', 
-            'reserve1',
-            'token0',
-            'token1',
-            'hash'
-            ]]
-        return df
+    df = pd.DataFrame(pre_to_pandas)
+    df['timestamp'] = pd.to_datetime(timestamps, unit='s').strftime('%Y-%m-%d %H:%M:%S')
+
+    # print(df.columns)
+    df['reserve0'] = df['reserve0'].astype(float) / (10 ** decimals)
+    df['reserve1'] = df['reserve1'].astype(float) / (10 ** decimals)
+    df['price'] = df['reserve0']/ df['reserve1']
+    df['swap0'] = df['reserve0'] - df['reserve0'].shift(-1)
+    df['swap1'] = df['reserve1'] - df['reserve1'].shift(-1)
+    # columns for display
+    df = df[[
+        'timestamp',
+        'block_number', 
+        'transaction_index', 
+        'price', 
+        # 'pair_address', 
+        'reserve0', 
+        'reserve1',
+        'swap0',
+        'swap1',
+        'hash'
+        ]]
+    return df
 
 
 def bsc_pair_detail(request: HttpRequest, pk: int):
-    
-    bsc_pair = BSCPair.objects.get(pk=pk)
-    pair = BscEthSyncEvent.objects.filter(bsc_pair=bsc_pair).order_by('-id')
+    pair = BscEthSyncEvent.objects.filter(bsc_pair=pk).order_by('-id')
+    bsc_pair = pair[0].bsc_pair
     pair_df = pair_sync_event_to_df(pair, bsc_pair.decimals)
-
+    
     context = {
         'pair_df': pair_df,
         'ticker': bsc_pair.pair_symbol,
