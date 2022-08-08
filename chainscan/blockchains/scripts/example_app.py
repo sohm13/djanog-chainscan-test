@@ -1,5 +1,5 @@
-from events_inspect.blockchain_scan import Pair, BlockChainScan
-from events_inspect.web3_provider import MyWeb3
+from events_inpsect.blockchain_scan import Pair, BlockChainScan
+from events_inpsect.web3_provider import MyWeb3
 import time
 
 
@@ -22,12 +22,11 @@ if __name__ == "__main__":
     bsc_scan = BlockChainScan(web3)
     
     tik = time.time()
-    blocks_range = [19395441, 19395441+1000]
-    # pairs_data = bsc_scan.get_scan_event_from_blocks(blocks_range[0], blocks_range[1], pairs)
-    pairs_data = bsc_scan.get_scan_event_from_blocks_async(blocks_range[0], blocks_range[1], pairs)
+    blocks_range = [ [19395441, 19395441+500] for _ in range(len(PAIRS))]
+    # pairs_data = bsc_scan.get_scan_event_from_blocks(blocks_range, pairs)
+    pairs_data = bsc_scan.get_scan_event_from_blocks_async(blocks_range, pairs)
     print('time', time.time() - tik)
     print('pairs:', len(pairs_data))
-    print('blocks:', blocks_range[1] - blocks_range[0])
     print('events:', sum([len(pair) for pair in pairs_data]))
 
     # can make dict with key and data

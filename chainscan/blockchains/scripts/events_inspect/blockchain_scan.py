@@ -1,14 +1,17 @@
 import asyncio
 import logging
+import concurrent.futures
+
 
 from web3 import Web3
 from web3._utils.filters import Filter
 from web3.types import (
     LogReceipt,
-     Optional
+     Optional,
+     BlockData
     )
 
-from .schemas import SyncEvent, Pair
+from .schemas import SyncEvent, Pair, Block
 from .events import EthEvent, EventLogsId
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(name)s  - %(message)s')
@@ -49,7 +52,9 @@ class BlockChainScan:
                 ...
                 ]
         '''
-        blocks = [self.eth_event.sync_event_from_blocks_filter(pair.address, block_range[0], block_range[1]) for pair, block_range in zip(pairs, pairs_block_range)]
+        blocks = [self.eth_event.sync_event_from_blocks_filter(pair.address, block_range[0], block_range[1]) 
+                    for pair, block_range in zip(pairs, pairs_block_range
+                    )]        
         tasks = [self.get_sync_events_async(block) for block in blocks]
         loop = asyncio.get_event_loop()
         try:
@@ -60,9 +65,10 @@ class BlockChainScan:
             loop.close()            
         return pairs_event_logs
 
-    def get_scan_event_from_blocks(self, block_start: int, block_end: int,  pairs: list[Pair]) -> list[list[Optional[SyncEvent]]]:
-        blocks = [self.eth_event.sync_event_from_blocks_filter(pair.address, block_start, block_end) for pair in pairs]
-
+    def get_scan_event_from_blocks(self, pairs_block_range: list[list], pairs: list[Pair]) -> list[list[Optional[SyncEvent]]]:
+        blocks = [self.eth_event.sync_event_from_blocks_filter(pair.address, block_range[0], block_range[1]) 
+                    for pair, block_range in zip(pairs, pairs_block_range
+                    )]
         pairs_event_logs = []
         for block in blocks:
             block_events = block.get_all_entries()
@@ -70,5 +76,22 @@ class BlockChainScan:
             pairs_event_logs.append(_sync_events)
         return pairs_event_logs
         
+
+    def get_blocks(self, block_start: int, block_end: int) -> list[Block]:
+        blocks_data = []
+        with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
+            blocks_data = executor.map(self.w3.eth.get_block, range(block_start, block_end))
+
+        blocks = [Block(
+                timestamp = block.timestamp,
+                difficulty = block.difficulty,
+                hash = block.hash.hex(),
+                miner = block.miner,
+                number = block.number,
+                size = block.size,
+                transactions_count = len(block.transactions),
+                gas_used = block.gasUsed
+        ) for block in blocks_data]
+        return blocks
 
 

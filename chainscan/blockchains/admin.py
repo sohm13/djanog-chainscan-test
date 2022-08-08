@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import BSCPair, BSCPairTransaction, BscEthSyncEvent
+from .models import BSCPair, BscEthSyncEvent
 
 
 class BscEthSyncEventAdmin(admin.ModelAdmin):
@@ -8,5 +8,4 @@ class BscEthSyncEventAdmin(admin.ModelAdmin):
 
 
 admin.site.register(BSCPair)
-admin.site.register(BSCPairTransaction)
 admin.site.register(BscEthSyncEvent, BscEthSyncEventAdmin)

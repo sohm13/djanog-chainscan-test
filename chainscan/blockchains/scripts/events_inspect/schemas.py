@@ -14,3 +14,14 @@ class SyncEvent(BaseModel):
     transaction_index: int = 0
     pair_address: str = ''
     method: str = ''
+
+
+class Block(BaseModel):
+    timestamp: str
+    difficulty: str
+    hash: str
+    miner: str
+    number: int
+    size: int
+    transactions_count: int
+    gas_used: str

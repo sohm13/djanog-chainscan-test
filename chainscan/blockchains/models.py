@@ -6,7 +6,7 @@ from datetime import  datetime
 class BaseEthPair(models.Model):
     factory_address = models.CharField(max_length=42, blank=False, null=False)
     pair_address = models.CharField(max_length=42, blank=False, null=False, unique=True)
-    pair_symbol = models.CharField(max_length=12, blank=False, null=False, unique=True)
+    pair_symbol = models.CharField(max_length=12, blank=False, null=False, unique=False)
     token0 = models.CharField(max_length=42, blank=False, null=False)
     token1 = models.CharField(max_length=42, blank=False, null=False)
     decimals = models.IntegerField(default=18)
@@ -19,20 +19,17 @@ class BaseEthPair(models.Model):
         return f'{self.pair_symbol}'
 
 
-class BaseEthPairTransaction(models.Model):
-    reserveToken0 = models.CharField(max_length=256, blank=False, null=False, default=0)
-    reserveToken1 = models.CharField(max_length=256, blank=False, null=False, default=0)
-    amount0In = models.CharField(max_length=256, blank=False, null=True)
-    amount1In = models.CharField(max_length=256, blank=False, null=True)
-    amount0Out = models.CharField(max_length=256, blank=False, null=True)
-    amount1Out = models.CharField(max_length=256, blank=False, null=True)
-    maker_address = models.CharField(max_length=42, blank=False, null=False)
-    block_number = models.IntegerField(null=True, blank=False)
-    hash = models.CharField(max_length=66, null=True, blank=False)
-    updated_at = models.DateTimeField(auto_created=True, null=True)
+class BaseBlock(models.Model):
+    timestamp = models.CharField(max_length=68)
+    difficulty = models.CharField(max_length=68, null=True)
+    hash = models.CharField(max_length=68)
+    miner = models.CharField(max_length=42)
+    number = models.IntegerField()
+    size = models.IntegerField()
+    transactions_count = models.IntegerField()
+    gas_used = models.CharField(max_length=68)
 
-    class Meta:
-        abstract = True
+
 
 class BaseEthSyncEvent(models.Model):
     reserve0 = models.CharField(max_length=256, blank=False, null=False, default=0)
@@ -52,12 +49,6 @@ class BSCPair(BaseEthPair):
     class Meta(BaseEthPair.Meta):
         db_table = 'BSCPair'
 
-
-class BSCPairTransaction(BaseEthPairTransaction):
-    pair = models.ForeignKey(BSCPair, on_delete=models.CASCADE, null=True)
-
-    class Meta(BaseEthPairTransaction.Meta):
-        db_table = 'BSCPairTransaction'
 
 
 class BscEthSyncEvent(BaseEthSyncEvent):

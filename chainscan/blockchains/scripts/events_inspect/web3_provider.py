@@ -17,6 +17,7 @@ from web3.parity import Parity, ParityPersonal
 from web3.geth import Geth, GethAdmin, GethMiner, GethPersonal, GethTxPool
 from web3.testing import Testing
 from web3.module import Module
+from web3.middleware import geth_poa_middleware
 
 from . import config
 
@@ -71,10 +72,14 @@ class MyWeb3(Web3):
         '''
         # HTTPProvider = Web3(AsyncHTTPProvider(self.network['http_url']), **self.get_web3_args())
         HTTPProvider = Web3(Web3.HTTPProvider(self.network['http_url']), **self.get_web3_args())
+        HTTPProvider.middleware_onion.inject(geth_poa_middleware, layer=0)
+
         return HTTPProvider
 
     def get_ws_provider(self):
         WebsocketProvider = Web3(Web3.WebsocketProvider(self.network['ws_url'] ))
+        WebsocketProvider.middleware_onion.inject(geth_poa_middleware, layer=0)
+
         return WebsocketProvider
 
 
