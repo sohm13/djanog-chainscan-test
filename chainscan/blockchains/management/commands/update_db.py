@@ -46,7 +46,10 @@ class Command(BaseCommand):
         data_for_db_save = []
         for (pair, pair_events) in zip(pairs, pairs_events):
             
-            events_for_db = [BscEthSyncEvent(**event.dict(), updated_at= timezone.now(), bsc_pair=pair) for event in pair_events if event]
+            events_for_db = [
+                BscEthSyncEvent(**event.dict(), updated_at=timezone.now(), bsc_pair=pair) 
+                for event in pair_events if event
+                ]
             data_for_db_save.extend(events_for_db)
         
         obj = BscEthSyncEvent.objects.bulk_create(data_for_db_save)

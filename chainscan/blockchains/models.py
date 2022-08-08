@@ -49,11 +49,15 @@ class BSCPair(BaseEthPair):
     class Meta(BaseEthPair.Meta):
         db_table = 'BSCPair'
 
+class BSCBlock(BaseBlock):
+    class Meta(BaseEthPair.Meta):
+        db_table = 'BSCBlock'
 
 
 class BscEthSyncEvent(BaseEthSyncEvent):
 
     bsc_pair = models.ForeignKey(BSCPair, on_delete=models.CASCADE, null=True)
+    bsc_block = models.ForeignKey(BSCBlock, on_delete=models.CASCADE, null=True)
 
     class Meta(BaseEthSyncEvent.Meta):
         db_table = 'BscEthSyncEvent'
