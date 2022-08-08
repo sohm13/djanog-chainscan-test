@@ -20,15 +20,20 @@ class BaseEthPair(models.Model):
 
 
 class BaseBlock(models.Model):
-    timestamp = models.CharField(max_length=68)
+    timestamp = models.CharField(max_length=68, null=True)
     difficulty = models.CharField(max_length=68, null=True)
-    hash = models.CharField(max_length=68)
-    miner = models.CharField(max_length=42)
-    number = models.IntegerField()
-    size = models.IntegerField()
-    transactions_count = models.IntegerField()
-    gas_used = models.CharField(max_length=68)
-
+    hash = models.CharField(max_length=68, null=True)
+    miner = models.CharField(max_length=42, null=True)
+    number = models.IntegerField(null=True, unique=True)
+    size = models.IntegerField(null=True, default=0)
+    transactions_count = models.IntegerField(null=True)
+    gas_used = models.CharField(max_length=68, default='0')
+    
+    class Meta:
+        abstract = True
+    
+    def __str__(self):
+        return f'{self.number}'
 
 
 class BaseEthSyncEvent(models.Model):
@@ -44,26 +49,28 @@ class BaseEthSyncEvent(models.Model):
     class Meta:
         abstract = True
 
+    def __str__(self):
+        return self.pair_address
+
 
 class BSCPair(BaseEthPair):
     class Meta(BaseEthPair.Meta):
         db_table = 'BSCPair'
 
 class BSCBlock(BaseBlock):
-    class Meta(BaseEthPair.Meta):
+    class Meta(BaseBlock.Meta):
         db_table = 'BSCBlock'
 
 
 class BscEthSyncEvent(BaseEthSyncEvent):
 
-    bsc_pair = models.ForeignKey(BSCPair, on_delete=models.CASCADE, null=True)
-    bsc_block = models.ForeignKey(BSCBlock, on_delete=models.CASCADE, null=True)
+    bsc_pair = models.ForeignKey("BSCPair", on_delete=models.CASCADE, null=True)
+    bsc_block = models.ForeignKey("BSCBlock", on_delete=models.CASCADE, null=True)
 
     class Meta(BaseEthSyncEvent.Meta):
         db_table = 'BscEthSyncEvent'
 
-    def __str__(self):
-        return self.pair_address
+
 
 
 

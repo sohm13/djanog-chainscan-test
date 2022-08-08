@@ -80,7 +80,7 @@ class BlockChainScan:
     def get_blocks(self, block_start: int, block_end: int) -> list[Block]:
         blocks_data = []
         with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
-            blocks_data = executor.map(self.w3.eth.get_block, range(block_start, block_end))
+            blocks_data = executor.map(self.w3.eth.get_block, range(block_start, block_end +1))
 
         blocks = [Block(
                 timestamp = block.timestamp,
