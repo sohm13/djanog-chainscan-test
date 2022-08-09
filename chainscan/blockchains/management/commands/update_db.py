@@ -19,8 +19,8 @@ class Command(BaseCommand):
         pairs = BSCPair.objects.all()
 
         pairs_block_range = []
-        last_block = self.INIT_BLOCK + 500
-        step = 5
+        # last_block = self.INIT_BLOCK + 500
+        step = 100
 
         #########################
         # get last update block in pair from db
@@ -31,14 +31,14 @@ class Command(BaseCommand):
             if pair_sync:
                 block_start = pair_sync.block_number + 1
 
-            block_end = block_start + step if block_start + step < last_block else last_block
+            block_end = block_start + step # if block_start + step < last_block else last_block
             pairs_block_range.append([block_start, block_end])            
 
         # prepare data for request to blockchain
         pairs_requests = [Pair(address = pair.pair_address, symbol = pair.pair_symbol) for pair in pairs]
 
-        print('pairs', pairs)
-        print('pairs_block_range', pairs_block_range)
+        # print('pairs', pairs)
+        # print('pairs_block_range', pairs_block_range)
 
         ###
         bsc = BlockChainScan(MyWeb3('bsc').get_http_provider())
@@ -53,7 +53,7 @@ class Command(BaseCommand):
         last_block_number_in_blocks = blocks_qs.last().number if blocks_qs.last() else self.INIT_BLOCK
 
         block_end = max(map(lambda r: r[1], pairs_block_range))
-        print('last_block_number_in_blocks', last_block_number_in_blocks, block_end)
+        # print('last_block_number_in_blocks', last_block_number_in_blocks, block_end)
         if last_block_number_in_blocks < block_end:
             # get blocks data from blockhain for update db
             blocks_chain = bsc.get_blocks(
@@ -70,25 +70,19 @@ class Command(BaseCommand):
         #########################
         # save data to bd in BscEthSyncEvent table 
         data_for_db_save = []
-        blocks_check = []
         for (pair, pair_events) in zip(pairs, pairs_events):
+
             events_for_db = [
                 BscEthSyncEvent(**event.dict(), 
                                 updated_at=timezone.now(),
                                 bsc_pair=pair,
                                 bsc_block=blocks_qs.get(number=event.block_number)
                                 ) 
-                for event in pair_events if event
+                for event in pair_events
                 ]
-
-            blocks_check = [event.block_number for event in pair_events]
+            
             data_for_db_save.extend(events_for_db)
-        
-        for i in range(len(data_for_db_save)):
-            assert data_for_db_save[i].block_number == blocks_check[i], 'dont correct db_udpate'
-        
-        # for d in data_for_db_save:
-        #     print('d',d.block_number, d.bsc_block, d.bsc_pair)
+
         obj = BscEthSyncEvent.objects.bulk_create(data_for_db_save)
 
         self.stdout.write(f"Pairs updaed, len data {len(data_for_db_save)}" )
