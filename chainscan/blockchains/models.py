@@ -6,9 +6,14 @@ from datetime import  datetime
 class BaseEthPair(models.Model):
     factory_address = models.CharField(max_length=42, blank=False, null=False)
     pair_address = models.CharField(max_length=42, blank=False, null=False, unique=True)
-    pair_symbol = models.CharField(max_length=12, blank=False, null=False, unique=False)
     token0 = models.CharField(max_length=42, blank=False, null=False)
     token1 = models.CharField(max_length=42, blank=False, null=False)
+
+    pair_symbol = models.CharField(max_length=12, blank=False, null=False, unique=False)
+    factory_symbol = models.CharField(max_length=42, blank=True, null=True)
+    token0_symbol = models.CharField(max_length=12, blank=True, null=True)
+    token1_symbol = models.CharField(max_length=12, blank=True, null=True)
+    
     decimals = models.IntegerField(default=18)
     updated_at = models.DateTimeField(auto_created=True, null=True)
     
