@@ -7,6 +7,8 @@ from blockchains.scripts.events_inspect.blockchain_scan import BlockChainScan
 from blockchains.scripts.events_inspect.web3_provider import MyWeb3
 from blockchains.scripts.events_inspect.schemas import Pair
 from blockchains.scripts.events_inspect.config import NETWORKS
+from blockchains.scripts.events_inspect.utils import get_block_by_timestamp
+
 import logging
 
 
