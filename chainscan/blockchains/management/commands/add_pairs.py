@@ -1,4 +1,5 @@
-from re import T
+# from re import T
+import sys
 from django.core.management.base import BaseCommand
 from django.utils import timezone
 
@@ -6,8 +7,10 @@ from blockchains.models import BSCPair, BscEthSyncEvent, BSCBlock
 
 from blockchains.scripts.events_inspect.blockchain_scan import BlockChainScan
 from blockchains.scripts.events_inspect.web3_provider import MyWeb3
-from blockchains.scripts.events_inspect.schemas import Pair
 from blockchains.scripts.events_inspect.contract_calls import get_pair_address, get_pair_decimals
+# from blockchains.scripts.events_inspect.schemas import Pair
+from blockchains.scripts.events_inspect.config import NETWORKS
+
 
 from itertools import product, combinations
 from dataclasses import dataclass
@@ -39,23 +42,37 @@ class Pair:
     decimals: int = 18
 
 
-TOKENS_MIXIN = [
-    Token(address='0x55d398326f99059ff775485246999027b3197955', label='USDT'),
-    Token(address='0xbb4cdb9cbd36b01bd1cbaebf2de08d9173bc095c', label='WBNB'),
-    Token(address='0x8AC76a51cc950d9822D68b83fE1Ad97B32Cd580d', label='USDC'),
-    Token(address='0x2170Ed0880ac9A755fd29B2688956BD959F933F8', label='ETH'),
-]
 
-TOKENS = [
-    Token(address='0x0E09FaBB73Bd3Ade0a17ECC321fD13a19e81cE82', label='CAKE'),
-    Token(address='0x0D8Ce2A99Bb6e3B7Db580eD848240e4a0F9aE153', label='FIL'),
-]
+def get_pairs_config(network_name: str = 'bsc') -> dict:
+    network = NETWORKS[network_name]
+    tokens = network['tokens']
+    factories = [ Factory(address=v, label=k) for k,v in network['factories'].items()]
+    token_mixin = [ Token(address=tokens[token_name], label=token_name) for token_name in network['generate_pair_params']['tokens_mixin_list']]
+    token_other = [ Token(address=tokens[token_name], label=token_name) for token_name in network['generate_pair_params']['tokens_other_list']]
+    return {
+        'factories': factories,
+        'tokens_mixin': token_mixin,
+        'tokens_other': token_other
+    }
 
-FACTORIES = [
-    Factory(address='0xca143ce32fe78f1f7019d7d551a6402fc5350c73', label='pancakeswap'),
-    Factory(address='0x858e3312ed3a876947ea49d572a7c42de08af7ee', label='biswap'),
 
-]
+# TOKENS_MIXIN = [
+#     Token(address='0x55d398326f99059ff775485246999027b3197955', label='USDT'),
+#     Token(address='0xbb4cdb9cbd36b01bd1cbaebf2de08d9173bc095c', label='WBNB'),
+#     Token(address='0x8AC76a51cc950d9822D68b83fE1Ad97B32Cd580d', label='USDC'),
+#     Token(address='0x2170Ed0880ac9A755fd29B2688956BD959F933F8', label='ETH'),
+# ]
+
+# TOKENS = [
+#     Token(address='0x0E09FaBB73Bd3Ade0a17ECC321fD13a19e81cE82', label='CAKE'),
+#     Token(address='0x0D8Ce2A99Bb6e3B7Db580eD848240e4a0F9aE153', label='FIL'),
+#     Token(address='0xbA2aE424d960c26247Dd6c32edC70B295c744C43', label='DOGE'),
+# ]
+
+# FACTORIES = [
+#     Factory(address='0xca143ce32fe78f1f7019d7d551a6402fc5350c73', label='pancakeswap'),
+#     Factory(address='0x858e3312ed3a876947ea49d572a7c42de08af7ee', label='biswap'),
+# ]
 
 
 
@@ -114,6 +131,15 @@ def pairs_to_csv(pairs: list[Pair], file_name: str = 'pairs') -> None:
 class Command(BaseCommand):
     
     def handle(self, *args, **options):
+        
+        network_name = 'aurora'
+        print('network_name', network_name)
+        pairs_config = get_pairs_config(network_name)
+        TOKENS = pairs_config['tokens_other']
+        TOKENS_MIXIN = pairs_config['tokens_mixin']
+        FACTORIES = pairs_config['factories']
+
+
         qs_pairs = BSCPair.objects.all()
 
         skip_tokens = [SkipToken(
@@ -122,16 +148,20 @@ class Command(BaseCommand):
             factory_address = qs_pair.factory_address
         ) for qs_pair in qs_pairs ]
 
-        web3 = MyWeb3('bsc').get_http_provider()
+        web3 = MyWeb3(network_name).get_http_provider()
         new_pairs = get_pairs(web3, TOKENS, TOKENS_MIXIN, FACTORIES, skip_tokens)
 
         pairs_prepare_for_db = [
                 BSCPair(
                         factory_address = pair.factory.address, 
                         pair_address = pair.address, 
-                        pair_symbol = pair.label,
                         token0 = pair.token0.address,
                         token1 = pair.token1.address,
+                        factory_symbol = pair.factory.label, 
+                        pair_symbol = pair.label,
+                        token0_symbol = pair.token0.label,
+                        token1_symbol = pair.token1.label,
+
                         decimals = pair.decimals,
                        updated_at = timezone.now()
                        ) 

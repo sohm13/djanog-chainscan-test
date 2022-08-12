@@ -1,0 +1,49 @@
+{% extends 'blockchains/base.html' %}
+
+{% block title %}
+ compare
+{% endblock %}
+
+{% block context %}
+
+<div class="container">
+    {% if errors %}
+    <h4> invalid inpute: </h4>
+     {{ errors }}
+    {% endif%}
+
+
+    <ul>
+        <table class="table table-bordered  table-striped">
+          <h4> compare_param is {{ compare_param}} </h4> 
+
+          <thead>
+            <tr>
+              {% for col in df.columns %}
+                <th scope="col">
+                  {{col}}
+                </th>
+              {% endfor %}
+            </tr>
+          </thead>
+          <tbody>
+            {% for index, row in df.iterrows %}
+              <tr>
+                {% for cell in row %}
+                  <td>
+                    {{ cell }}
+                  </td>
+                {% endfor %}
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </ul>
+
+
+
+</div>
+
+
+
+{% endblock%}

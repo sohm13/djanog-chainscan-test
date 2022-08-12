@@ -9,7 +9,8 @@
 <div>
 
 
-    <form action="{% url 'blockchains:pair-balances' %}" method="POST">{% csrf_token %}
+    <form action="{% url 'blockchains:compare-view' %}" method="POST">
+        {% csrf_token %}
         {{ form.as_p }}
         <input type="submit" value="Send message">
     </form>
