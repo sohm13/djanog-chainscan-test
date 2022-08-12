@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import BSCPair, BscEthSyncEvent, BSCBlock
+from .models import BSCPair, BscEthSyncEvent, BSCBlock, AuroraPair, AuroraEthSyncEvent, AuroraBlock
 
 
 class BscEthSyncEventAdmin(admin.ModelAdmin):
@@ -10,3 +10,7 @@ class BscEthSyncEventAdmin(admin.ModelAdmin):
 admin.site.register(BSCBlock)
 admin.site.register(BSCPair)
 admin.site.register(BscEthSyncEvent, BscEthSyncEventAdmin)
+
+admin.site.register(AuroraPair)
+admin.site.register(AuroraEthSyncEvent)
+admin.site.register(AuroraBlock)

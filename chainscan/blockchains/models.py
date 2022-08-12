@@ -3,6 +3,7 @@ from django.db import models
 from datetime import  datetime
 
 
+
 class BaseEthPair(models.Model):
     factory_address = models.CharField(max_length=42, blank=False, null=False)
     pair_address = models.CharField(max_length=42, blank=False, null=False, unique=True)
@@ -97,3 +98,15 @@ class AuroraEthSyncEvent(BaseEthSyncEvent):
 
 
 
+NETWORK_MODELS_MAP = {
+        'bsc': {
+            'pair_model': BSCPair,
+            'eth_sync_event_model': BscEthSyncEvent,
+            'block_model': BSCBlock
+        },
+        'aurora': {
+            'pair_model': AuroraPair,
+            'eth_sync_event_model': AuroraEthSyncEvent,
+            'block_model': AuroraBlock,
+        }
+    }

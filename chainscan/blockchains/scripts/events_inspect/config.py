@@ -3,6 +3,9 @@ from os import getenv
 
 # avalibale networks
 NETWORKS = {
+    'work_networks': ['bsc', 'aurora'],
+    'init_block': 19395440,
+    'init_timestamp': 1602824592, 
     'bsc': {
         'http_url': 'https://bsc-dataseed.binance.org/',
         'ws_url': f'wss://bsc--mainnet--ws.datahub.figment.io/apikey/{getenv("DATAHUB_KEY")}',

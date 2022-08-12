@@ -3,7 +3,7 @@ import sys
 from django.core.management.base import BaseCommand
 from django.utils import timezone
 
-from blockchains.models import BSCPair, BscEthSyncEvent, BSCBlock
+from blockchains.models import NETWORK_MODELS_MAP
 
 from blockchains.scripts.events_inspect.blockchain_scan import BlockChainScan
 from blockchains.scripts.events_inspect.web3_provider import MyWeb3
@@ -128,19 +128,24 @@ def pairs_to_csv(pairs: list[Pair], file_name: str = 'pairs') -> None:
 
 
 
-class Command(BaseCommand):
     
-    def handle(self, *args, **options):
-        
-        network_name = 'aurora'
+
+
+
+
+class Command(BaseCommand):
+
+    
+    def add_pairs(self, network_name: str = 'bsc'):
         print('network_name', network_name)
         pairs_config = get_pairs_config(network_name)
         TOKENS = pairs_config['tokens_other']
         TOKENS_MIXIN = pairs_config['tokens_mixin']
         FACTORIES = pairs_config['factories']
 
+        pair_model = NETWORK_MODELS_MAP[network_name]['pair_model']
 
-        qs_pairs = BSCPair.objects.all()
+        qs_pairs = pair_model.objects.all()
 
         skip_tokens = [SkipToken(
             tokenb_address = qs_pair.token0,
@@ -152,7 +157,7 @@ class Command(BaseCommand):
         new_pairs = get_pairs(web3, TOKENS, TOKENS_MIXIN, FACTORIES, skip_tokens)
 
         pairs_prepare_for_db = [
-                BSCPair(
+                pair_model(
                         factory_address = pair.factory.address, 
                         pair_address = pair.address, 
                         token0 = pair.token0.address,
@@ -167,6 +172,14 @@ class Command(BaseCommand):
                        ) 
                 for pair in new_pairs
                 ]
-        BSCPair.objects.bulk_create(pairs_prepare_for_db)
+        pair_model.objects.bulk_create(pairs_prepare_for_db)
 
         self.stdout.write(f"Pairs added {[p.pair_symbol for p in pairs_prepare_for_db]}" )
+
+
+    def handle(self, *args, **options):
+        netowkr_names = NETWORKS['work_networks']
+
+        for network_name in netowkr_names:
+            self.add_pairs(network_name)
+
