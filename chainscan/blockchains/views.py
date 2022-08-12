@@ -11,7 +11,7 @@ from .scripts.events_inspect.web3_provider import MyWeb3
 from .scripts.events_inspect.schemas import Pair
 
 
-from .models import BSCPair, BscEthSyncEvent
+from .models import BSCPair, BscEthSyncEvent, AuroraPair, AuroraEthSyncEvent
 from .forms import CompareForm
 
 import time
@@ -80,6 +80,21 @@ def bsc_pair_detail(request: HttpRequest, pk: int):
     }
     
     return render(request, 'blockchains/bsc_detail.html', context=context)
+
+def aurora_pair_detail(request: HttpRequest, pk: int):
+    pair = BscEthSyncEvent.objects.filter(bsc_pair=pk).order_by('-id')
+    bsc_pair = pair[0].bsc_pair
+    pair_df = pair_sync_event_to_df(pair, bsc_pair.decimals)
+    
+    context = {
+        'pair_df': pair_df,
+        'ticker': bsc_pair.pair_symbol,
+        'address': bsc_pair.pair_address,
+    }
+    
+    return render(request, 'blockchains/bsc_detail.html', context=context)
+
+
 
 
 
