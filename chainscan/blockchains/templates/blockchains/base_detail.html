@@ -1,0 +1,25 @@
+<b> {{ticker}} : {{address}} </b>
+<ul>
+  <table class="table table-bordered  table-striped">
+    <thead>
+      <tr>
+        {% for col in pair_df.columns %}
+          <th scope="col">
+            {{col}}
+          </th>
+        {% endfor %}
+      </tr>
+    </thead>
+    <tbody>
+      {% for index, row in pair_df.iterrows %}
+        <tr>
+          {% for cell in row %}
+            <td>
+              {{ cell }}
+            </td>
+          {% endfor %}
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</ul>

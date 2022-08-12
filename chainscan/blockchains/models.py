@@ -87,8 +87,8 @@ class AuroraBlock(BaseBlock):
 
 class AuroraEthSyncEvent(BaseEthSyncEvent):
 
-    bsc_pair = models.ForeignKey("AuroraPair", on_delete=models.CASCADE, null=True)
-    bsc_block = models.ForeignKey("AuroraBlock", on_delete=models.CASCADE, null=True)
+    pair_model = models.ForeignKey("AuroraPair", on_delete=models.CASCADE, null=True)
+    block_model = models.ForeignKey("AuroraBlock", on_delete=models.CASCADE, null=True)
 
     class Meta(BaseEthSyncEvent.Meta):
         db_table = 'AuroraEthSyncEvent'

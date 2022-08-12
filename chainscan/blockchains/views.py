@@ -26,6 +26,11 @@ class BscListView(ListView):
     context_object_name = 'pairs'
     paginate_by = 20
 
+class AuroraListView(ListView):
+    model = AuroraPair
+    template_name = 'blockchains/aurora_list.html'
+    context_object_name = 'pairs'
+    paginate_by = 20
 
 
 def pair_sync_event_to_df(pair: BscEthSyncEvent, decimals=18):
@@ -82,17 +87,17 @@ def bsc_pair_detail(request: HttpRequest, pk: int):
     return render(request, 'blockchains/bsc_detail.html', context=context)
 
 def aurora_pair_detail(request: HttpRequest, pk: int):
-    pair = BscEthSyncEvent.objects.filter(bsc_pair=pk).order_by('-id')
-    bsc_pair = pair[0].bsc_pair
-    pair_df = pair_sync_event_to_df(pair, bsc_pair.decimals)
+    pair_events = AuroraEthSyncEvent.objects.filter(pair_model=pk).order_by('-id')
+    pair = pair_events[0].pair_model
+    pair_df = pair_sync_event_to_df(pair, pair.decimals)
     
     context = {
         'pair_df': pair_df,
-        'ticker': bsc_pair.pair_symbol,
-        'address': bsc_pair.pair_address,
+        'ticker': pair.pair_symbol,
+        'address': pair.pair_address,
     }
     
-    return render(request, 'blockchains/bsc_detail.html', context=context)
+    return render(request, 'blockchains/aurora_detail.html', context=context)
 
 
 

@@ -1,0 +1,31 @@
+
+<ul>
+    <table class="table table-bordered  table-striped">
+      <h2> Pairs   </h2>
+
+    <thead>
+        <tr>
+          <th scope="col"> Id </th>
+          <th scope="col">Pair Address </th>
+          <th scope="col">Pair symbol </th>
+          <th scope="col">Factory </th>
+          <th scope="col">Created At</th>
+        </tr>
+      </thead>
+    <tbody>
+
+
+    {% for pair in pairs %}
+        <tr>
+          <td>  <a href="{% url 'blockchains:bsc-detail' pair.id %}"> {{ pair.id}} </a> </td>
+          <td > {{ pair.pair_address}} </td>
+          <td> {{ pair.pair_symbol}} </td>
+          <td> {{ pair.factory_address}} </td>
+          <td> {{ pair.updated_at}} </td>
+        </tr>
+    {% endfor %}
+</tbody>
+</table>
+
+</ul>
+    
