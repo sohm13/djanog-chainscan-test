@@ -14,6 +14,8 @@ class BaseEthPair(models.Model):
     factory_symbol = models.CharField(max_length=42, blank=True, null=True)
     token0_symbol = models.CharField(max_length=12, blank=True, null=True)
     token1_symbol = models.CharField(max_length=12, blank=True, null=True)
+    token0_decimals = models.IntegerField(null=True)
+    token1_decimals = models.IntegerField(null=True)
     
     decimals = models.IntegerField(default=18)
     updated_at = models.DateTimeField(auto_created=True, null=True)
