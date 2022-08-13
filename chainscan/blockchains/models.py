@@ -67,11 +67,9 @@ class BSCBlock(BaseBlock):
     class Meta(BaseBlock.Meta):
         db_table = 'BSCBlock'
 
-
 class BscEthSyncEvent(BaseEthSyncEvent):
-
-    bsc_pair = models.ForeignKey("BSCPair", on_delete=models.CASCADE, null=True)
-    bsc_block = models.ForeignKey("BSCBlock", on_delete=models.CASCADE, null=True)
+    pair_model = models.ForeignKey("BSCPair", on_delete=models.CASCADE, null=True)
+    block_model = models.ForeignKey("BSCBlock", on_delete=models.CASCADE, null=True)
 
     class Meta(BaseEthSyncEvent.Meta):
         db_table = 'BscEthSyncEvent'
@@ -87,7 +85,6 @@ class AuroraBlock(BaseBlock):
         db_table = 'AuroraBlock'
 
 class AuroraEthSyncEvent(BaseEthSyncEvent):
-
     pair_model = models.ForeignKey("AuroraPair", on_delete=models.CASCADE, null=True)
     block_model = models.ForeignKey("AuroraBlock", on_delete=models.CASCADE, null=True)
 

@@ -7,6 +7,8 @@
 
 {% block context %}
 
+{%with path='blockchains:bsc-detail'%}
 {% include  'blockchains/base_pair_list.html'%}
+{% endwith %}
 
 {% endblock %}
