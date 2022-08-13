@@ -7,7 +7,7 @@ from blockchains.models import NETWORK_MODELS_MAP
 
 from blockchains.scripts.events_inspect.blockchain_scan import BlockChainScan
 from blockchains.scripts.events_inspect.web3_provider import MyWeb3
-from blockchains.scripts.events_inspect.contract_calls import get_pair_address, get_pair_decimals
+from blockchains.scripts.events_inspect.contract_calls import get_pair_address, get_pair_decimals, get_erc20_decimals
 # from blockchains.scripts.events_inspect.schemas import Pair
 from blockchains.scripts.events_inspect.config import NETWORKS
 
@@ -20,6 +20,7 @@ from dataclasses import dataclass
 class Token:
     address: str
     label: str
+    decimals: int = None
 
 @dataclass
 class Factory:
@@ -109,13 +110,15 @@ def get_pairs(
             if pair_address[:2] != '0x' or int(pair_address, 16) == 0:
                 continue
             decimals = get_pair_decimals(web3, pair_address)
+            token0.decimals = get_erc20_decimals(web3, token0.address)
+            token1.decimals = get_erc20_decimals(web3, token1.address)
             pairs.append(Pair(
                 address = pair_address,
                 label = f'{token0.label}_{token1.label}',
                 token0 = token0,
                 token1 = token1,
                 factory = factory,
-                decimals = decimals
+                decimals = decimals,
             ))
     return pairs
 
@@ -168,6 +171,8 @@ class Command(BaseCommand):
                         token1_symbol = pair.token1.label,
 
                         decimals = pair.decimals,
+                        token0_decimals = pair.token0.decimals,
+                        token1_decimals = pair.token1.decimals,
                        updated_at = timezone.now()
                        ) 
                 for pair in new_pairs

@@ -1,7 +1,7 @@
 
 from web3 import Web3
 import json
-from .abi import FACTORY_V2_ABI, PAIR_V2_ABI
+from .abi import FACTORY_V2_ABI, PAIR_V2_ABI, ERC20_ABI
 
 
 def get_pair_address(w3: Web3, token_a: str, token_b: str, factory: str, factory_abi: json = FACTORY_V2_ABI) -> str:
@@ -12,6 +12,11 @@ def get_pair_address(w3: Web3, token_a: str, token_b: str, factory: str, factory
 
 
 def get_pair_decimals(w3: Web3, pair_address, abi: json = PAIR_V2_ABI):
-    contract = w3.eth.contract(address=pair_address, abi=abi)
+    contract = w3.eth.contract(address=w3.toChecksumAddress(pair_address), abi=abi)
+    decimals = contract.functions.decimals().call()
+    return decimals
+
+def get_erc20_decimals(w3: Web3, address: str) -> int:
+    contract = w3.eth.contract(address=w3.toChecksumAddress(address), abi=ERC20_ABI)
     decimals = contract.functions.decimals().call()
     return decimals

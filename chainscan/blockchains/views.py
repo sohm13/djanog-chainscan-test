@@ -33,7 +33,7 @@ class AuroraListView(ListView):
     paginate_by = 20
 
 
-def pair_sync_event_to_df(pair: BscEthSyncEvent, decimals=18):
+def pair_sync_event_to_df(pair: BscEthSyncEvent, decimals_token0: int=18, decimals_token1: int=18):
     pre_to_pandas = [obj.__dict__ for obj in pair ]
     # deep dependency
     timestamps = [p.block_model.timestamp for p in pair]
@@ -50,8 +50,8 @@ def pair_sync_event_to_df(pair: BscEthSyncEvent, decimals=18):
         df['timestamp'] = pd.to_datetime(timestamps, unit='s').strftime('%Y-%m-%d %H:%M:%S')
 
         # print(df.columns)
-        df['reserve0'] = df['reserve0'].astype(float) / (10 ** decimals)
-        df['reserve1'] = df['reserve1'].astype(float) / (10 ** decimals)
+        df['reserve0'] = df['reserve0'].astype(float) / (10 ** decimals_token0)
+        df['reserve1'] = df['reserve1'].astype(float) / (10 ** decimals_token1)
         df['price'] = df['reserve0']/ df['reserve1']
         df['swap0'] = df['reserve0'] - df['reserve0'].shift(-1)
         df['swap1'] = df['reserve1'] - df['reserve1'].shift(-1)
@@ -74,11 +74,11 @@ def pair_sync_event_to_df(pair: BscEthSyncEvent, decimals=18):
 
 
 def bsc_pair_detail(request: HttpRequest, pk: int):
-    pair = BscEthSyncEvent.objects.filter(pair_model=pk).order_by('-id')
-    if len(pair) == 0:
+    pair_events = BscEthSyncEvent.objects.filter(pair_model=pk).order_by('-id')
+    if len(pair_events) == 0:
         return render(request, 'blockchains/not_pair_events.html') 
-    pair_model = pair[0].pair_model
-    pair_df = pair_sync_event_to_df(pair, pair_model.decimals)
+    pair_model = pair_events[0].pair_model
+    pair_df = pair_sync_event_to_df(pair_events, pair_model.token0_decimals, pair_model.token1_decimals)
     
     context = {
         'pair_df': pair_df,
@@ -92,12 +92,12 @@ def aurora_pair_detail(request: HttpRequest, pk: int):
     pair_events = AuroraEthSyncEvent.objects.filter(pair_model=pk).order_by('-id')
     if len(pair_events) == 0:
         return render(request, 'blockchains/not_pair_events.html') 
-    pair = pair_events[0].pair_model
-    pair_df = pair_sync_event_to_df(pair_events, pair.decimals)
+    pair_model = pair_events[0].pair_model
+    pair_df = pair_sync_event_to_df(pair_events, pair_model.token0_decimals, pair_model.token1_decimals)
     context = {
         'pair_df': pair_df,
-        'ticker': pair.pair_symbol,
-        'address': pair.pair_address,
+        'ticker': pair_model.pair_symbol,
+        'address': pair_model.pair_address,
     }
     
     return render(request, 'blockchains/aurora_detail.html', context=context)
