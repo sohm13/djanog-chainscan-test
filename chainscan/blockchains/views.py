@@ -36,8 +36,8 @@ class AuroraListView(ListView):
 def pair_sync_event_to_df(pair: BscEthSyncEvent, decimals=18):
     pre_to_pandas = [obj.__dict__ for obj in pair ]
     # deep dependency
-    timestamps = [p.bsc_block.timestamp for p in pair]
-    symbols = [p.bsc_pair.pair_symbol for p in pair]
+    timestamps = [p.block_model.timestamp for p in pair]
+    symbols = [p.pair_model.pair_symbol for p in pair]
 
     # print('len(pre_to_pandas)', len(pre_to_pandas))
     # if len(pre_to_pandas) == 0:
@@ -74,23 +74,26 @@ def pair_sync_event_to_df(pair: BscEthSyncEvent, decimals=18):
 
 
 def bsc_pair_detail(request: HttpRequest, pk: int):
-    pair = BscEthSyncEvent.objects.filter(bsc_pair=pk).order_by('-id')
-    bsc_pair = pair[0].bsc_pair
-    pair_df = pair_sync_event_to_df(pair, bsc_pair.decimals)
+    pair = BscEthSyncEvent.objects.filter(pair_model=pk).order_by('-id')
+    if len(pair) == 0:
+        return render(request, 'blockchains/not_pair_events.html') 
+    pair_model = pair[0].pair_model
+    pair_df = pair_sync_event_to_df(pair, pair_model.decimals)
     
     context = {
         'pair_df': pair_df,
-        'ticker': bsc_pair.pair_symbol,
-        'address': bsc_pair.pair_address,
+        'ticker': pair_model.pair_symbol,
+        'address': pair_model.pair_address,
     }
     
     return render(request, 'blockchains/bsc_detail.html', context=context)
 
 def aurora_pair_detail(request: HttpRequest, pk: int):
     pair_events = AuroraEthSyncEvent.objects.filter(pair_model=pk).order_by('-id')
+    if len(pair_events) == 0:
+        return render(request, 'blockchains/not_pair_events.html') 
     pair = pair_events[0].pair_model
-    pair_df = pair_sync_event_to_df(pair, pair.decimals)
-    
+    pair_df = pair_sync_event_to_df(pair_events, pair.decimals)
     context = {
         'pair_df': pair_df,
         'ticker': pair.pair_symbol,
@@ -117,7 +120,7 @@ def compare_view(request: HttpRequest):
         data =  form.cleaned_data
         pairs = BSCPair.objects.filter(pair_symbol=data['pair'])
         print('pairs:', pairs)
-        event_pairs = [BscEthSyncEvent.objects.filter(bsc_pair=pair.pk) for pair in pairs]
+        event_pairs = [BscEthSyncEvent.objects.filter(pair_model=pair.pk) for pair in pairs]
         assert len(pairs) == len(event_pairs), "len(pairs) == len(event_pairs) in 'compare_view'"
 
         df_event_pairs = [pair_sync_event_to_df(event_pairs[i], pairs[i].decimals) for i in range(len(pairs))]
