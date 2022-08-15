@@ -43,6 +43,8 @@ class MyWeb3(Web3):
             }
     }
 
+    timeout = 60
+
     # networks = {
     #     'bsc': config.NETWORKS["bsc"]
     # }
@@ -53,7 +55,7 @@ class MyWeb3(Web3):
 
     def get_network(self, network_name: str):
         network = config.NETWORKS.get(network_name.lower(), None)
-        assert network, f"network_name not found in {self.networks}"
+        assert network, f"network_name not found {network_name}"
         return network
 
 
@@ -61,7 +63,14 @@ class MyWeb3(Web3):
                 middlewares: Optional[Sequence[Any]] = None,
                 modules: Optional[dict[str, Union[Type[Module], Sequence[Any]]]] = None,
         ):
-        pass
+        return {
+         'timeout': 20, 
+         'middlewares': middlewares,
+         'modules': modules
+
+        }
+
+        
     
     
     def get_web3_args(self):
@@ -71,7 +80,7 @@ class MyWeb3(Web3):
         '''
         '''
         # HTTPProvider = Web3(AsyncHTTPProvider(self.network['http_url']), **self.get_web3_args())
-        HTTPProvider = Web3(Web3.HTTPProvider(self.network['http_url']), **self.get_web3_args())
+        HTTPProvider = Web3(Web3.HTTPProvider(self.network['http_url'], request_kwargs={'timeout':self.timeout}), **self.get_web3_args() )
         HTTPProvider.middleware_onion.inject(geth_poa_middleware, layer=0)
 
         return HTTPProvider

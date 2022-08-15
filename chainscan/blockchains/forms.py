@@ -1,5 +1,5 @@
 from django import forms
-
+from blockchains.models import AuroraPair, BSCPair, NETWORK_MODELS_MAP
 
 
 COMPARE_PARAMS = (
@@ -9,33 +9,28 @@ COMPARE_PARAMS = (
 
 BLOCKCHAINS = (
     ('bsc', 'BSC'),
-    ('eth', 'ETH')
-)
-
-DEXs = (
-    ('pancakeswap', 'PANCAKESWAP'),
-    ('biswap', 'BISWAP'),
+    ('eth', 'ETH'),
+    ('aurora', 'AURORA'),
 )
 
 
 
-# class DateTimeWidget(forms.widgets.DateTimeInput):
+chains = [ (network, NETWORK_MODELS_MAP[network]['pair_model'].objects.all()) for network in NETWORK_MODELS_MAP.keys()]
 
-#     def __init__(self, *args, **kwargs):
-#         format='%d/%m/%Y %H:%M'
-#         attrs={ 
-#                 # 'class': 'form-control', 
-#                 'placeholder': 'dd-mm-yyyy HH:MM',
-#                 'type': 'date',
-#                 'size': 100
-#                         }
 
-#         super().__init__(format=format, attrs=attrs)
+dexs = []
+for netowrk, chain in chains:
+    for pair in chain:
+        dexs.append(pair.factory_symbol + f'_{netowrk}')
+dexs = set(dexs)
+DEXs = [(dex, dex.upper()) for dex in dexs]
+
+
 
 
 class CompareForm(forms.Form):
 
-    pair = forms.CharField( initial = 'WBNB_USDT', required = True)
+    pair = forms.CharField( initial = 'USDT_USDC', required = True)
     blockchains = forms.MultipleChoiceField(choices = BLOCKCHAINS, widget=forms.CheckboxSelectMultiple, initial = BLOCKCHAINS[0])
     dexs = forms.MultipleChoiceField(choices = DEXs, widget=forms.CheckboxSelectMultiple, initial = DEXs[0])
     compare_param = forms.ChoiceField( choices = COMPARE_PARAMS)

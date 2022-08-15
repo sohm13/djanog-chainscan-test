@@ -11,7 +11,7 @@ from .scripts.events_inspect.web3_provider import MyWeb3
 from .scripts.events_inspect.schemas import Pair
 
 
-from .models import BSCPair, BscEthSyncEvent, AuroraPair, AuroraEthSyncEvent
+from .models import BSCPair, BscEthSyncEvent, AuroraPair, AuroraEthSyncEvent, NETWORK_MODELS_MAP
 from .forms import CompareForm
 
 import time
@@ -34,6 +34,7 @@ class AuroraListView(ListView):
 
 
 def pair_sync_event_to_df(pair: BscEthSyncEvent, decimals_token0: int=18, decimals_token1: int=18):
+    # print('pair:', pair)
     pre_to_pandas = [obj.__dict__ for obj in pair ]
     # deep dependency
     timestamps = [p.block_model.timestamp for p in pair]
@@ -104,8 +105,6 @@ def aurora_pair_detail(request: HttpRequest, pk: int):
 
 
 
-
-
 def compare_view(request: HttpRequest):
     context = {}
 
@@ -118,25 +117,28 @@ def compare_view(request: HttpRequest):
 
     if form.is_valid():
         data =  form.cleaned_data
-        pairs = BSCPair.objects.filter(pair_symbol=data['pair'])
-        print('pairs:', pairs)
-        event_pairs = [BscEthSyncEvent.objects.filter(pair_model=pair.pk) for pair in pairs]
-        assert len(pairs) == len(event_pairs), "len(pairs) == len(event_pairs) in 'compare_view'"
 
-        df_event_pairs = [pair_sync_event_to_df(event_pairs[i], pairs[i].decimals) for i in range(len(pairs))]
+        chains = [ (network, NETWORK_MODELS_MAP[network]) for network in NETWORK_MODELS_MAP.keys()]
 
-        df_param = [df_event[data['compare_param']].rename(pair.factory_symbol) for df_event, pair in zip(df_event_pairs, pairs)]
-        print('df_event_pairs')
-        print(df_param)
+        df_chains_param = []
+        for network_name, chain in chains:
+            pairs = chain['pair_model'].objects.filter(pair_symbol=data['pair'])
+            event_pairs = [chain['eth_sync_event_model'].objects.filter(pair_model=pair.pk) for pair in pairs]
+            assert len(pairs) == len(event_pairs), "len(pairs) == len(event_pairs) in 'compare_view'"
 
-        df_concat = pd.concat(df_param, axis=1)
-        # print(conc)
+            df_event_pairs = [pair_sync_event_to_df(event_pairs[i], pairs[i].decimals) for i in range(len(pairs))]
 
+            df_param = []
+            for df_event, pair in zip(df_event_pairs, pairs):
+                _data_add = df_event[[data['compare_param'], 'timestamp']] 
+                _data_add.rename(columns={data['compare_param']: pair.factory_symbol, 'timestamp': f'timestamp_{pair.factory_symbol}'}, inplace=True)
+                df_param.append(_data_add)
+            df_chains_param.extend(df_param)
+
+        df_concat =  pd.concat(df_chains_param, axis=1)
+        # print(df_concat.head())
         context['df'] = df_concat
         context['compare_param'] = data['compare_param']
-        # print(df)
-        # print('event_pairs', event_pairs[0].__dict__)
-        # print(context['form'])
         
     return render(request, 'blockchains/compare_view.html', context)
 

@@ -1,6 +1,7 @@
 from web3 import Web3
 
 from typing import Optional
+from .schemas import Token
 
 
 def get_block_by_timestamp(web3: Web3, timestamp: int, tries: int = 100) -> Optional[int]:
@@ -32,3 +33,6 @@ def get_block_by_timestamp(web3: Web3, timestamp: int, tries: int = 100) -> Opti
 
 
 
+def sort_tokens(token_a: Token, token_b: Token) -> tuple[Token, Token]:
+    token0, token1 = (token_a, token_b) if int(token_a.address, 16) < int(token_b.address, 16) else (token_b, token_a)
+    return (token0, token1)

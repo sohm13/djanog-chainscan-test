@@ -1,34 +1,48 @@
 from events_inpsect.blockchain_scan import Pair, BlockChainScan
 from events_inpsect.web3_provider import MyWeb3
+from events_inpsect.helper import get_pairs_config, get_pairs
+from events_inpsect.utils import get_block_by_timestamp
 import time
+
 
 
 
 if __name__ == "__main__":
 
-    web3 = MyWeb3('bsc').get_http_provider()
+    network_name = 'bsc'
+
+    web3 = MyWeb3(network_name).get_http_provider()
+
+    pair_params = get_pairs_config(network_name)
 
 
-    PAIRS = (
-        ('0x0eD7e52944161450477ee417DE9Cd3a859b14fD0', 'CAKE_WBNB'),
-        ('0xA39Af17CE4a8eb807E076805Da1e2B8EA7D0755b', 'CAKE_USDT'),
-        ('0x7EFaEf62fDdCCa950418312c6C91Aef321375A00', 'USDT_BUSD'),
-        ('0x16b9a82891338f9bA80E2D6970FddA79D1eb0daE', 'BUSD_WBNB'),
-        ('0x8FA59693458289914dB0097F5F366d771B7a7C3F', 'MBOX_WBNB'),
-    )
+    pairs_dex = get_pairs(web3, pair_params.tokens_other, pair_params.tokens_mixin, pair_params.factories)
+    pairs = [Pair(address=pd.address, symbol=pd.label) for pd in pairs_dex]
+    scan = BlockChainScan(web3)
 
-    pairs = [Pair(address=p[0], symbol=p[1]) for p in PAIRS] 
-
-    bsc_scan = BlockChainScan(web3)
-    
+    # for p in pairs_dex:
+    #     print(p)
     tik = time.time()
-    blocks_range = [ [19395441, 19395441+500] for _ in range(len(PAIRS))]
-    # pairs_data = bsc_scan.get_scan_event_from_blocks(blocks_range, pairs)
-    pairs_data = bsc_scan.get_scan_event_from_blocks_async(blocks_range, pairs)
+    timestamp_start = 1655000000
+    block_start = get_block_by_timestamp(web3, timestamp_start)
+    block_end = get_block_by_timestamp(web3, timestamp_start+100)
+    blocks_range = [ [block_start, block_end] for _ in range(len(pairs))]
+    pairs_data = scan.get_scan_event_from_blocks(blocks_range, pairs)
+    # pairs_data = scan.get_scan_event_from_blocks_async(blocks_range, pairs)
     print('time', time.time() - tik)
     print('pairs:', len(pairs_data))
     print('events:', sum([len(pair) for pair in pairs_data]))
 
-    # can make dict with key and data
-    pairs_dict = { PAIRS[i][1]:pairs_data[i] for i in range(len(pairs_data)) }
+    # # can make dict with key and data
+    # pairs_dict = { PAIRS[i][1]:pairs_data[i] for i in range(len(pairs_data)) }
+
+
+    # # blocks data
+    # tik = time.time()
+    # blocks = bsc_scan.get_blocks(*blocks_range[0])
+    # # for b in blocks:
+    # #     print(b.number, b.timestamp, b.size, len(b.transactions))
+    # print(f'time for get blocks {len(blocks)}', time.time() - tik)
+    # print(blocks[0])
+
 

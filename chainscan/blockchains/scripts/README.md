@@ -12,8 +12,12 @@ blockchain_scan -->-- [events, schemas]
 events -->-- [schemas, decode]
 web3_provider -->-- [config]
 contract_calls -->-- [abi]
+helper -->-- [config, schemas,web3_provider, contract_calls, utils]
+utils -->-- [schemas]
+
 ____________________________
 
-app -->-- [blockchain_scan, web3_provider]
-app_contract -->-- [contract_calls, web3_provider]
+example_app -->-- [blockchain_scan, web3_provider, helper, utils]
 ```
+
+
