@@ -6,6 +6,7 @@ NETWORKS = {
     'work_networks': ['bsc', 'aurora'],
     'init_timestamp': 1655000000, 
     'timestamp_step': 500,
+    'bunch_blocks_limit': 5000,
     'bsc': {
         'http_url': 'https://bsc-dataseed.binance.org/',
         'ws_url': f'wss://bsc--mainnet--ws.datahub.figment.io/apikey/{getenv("DATAHUB_KEY")}',

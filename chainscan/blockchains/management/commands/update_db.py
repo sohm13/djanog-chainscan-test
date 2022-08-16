@@ -59,6 +59,10 @@ class Command(BaseCommand):
 
             # block_end = block_start + step # if block_start + step < last_block else last_block
             block_end = INIT_BLOCK_END if block_start < INIT_BLOCK_END else block_start+1
+            blocks_limit=  NETWORKS['bunch_blocks_limit'] - (block_end - block_start)
+            if blocks_limit < 0:
+                block_end += blocks_limit
+
             pairs_block_range.append([block_start, block_end])            
 
         # prepare data for request to blockchain
