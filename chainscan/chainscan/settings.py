@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/4.0/ref/settings/
 """
 
 from pathlib import Path
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -23,10 +24,16 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-+e#+p3wdm98*@=i(rq!xyj-1@mtqw@vpi#ab^yi8@rqu(4a)ya'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.environ.get('DEBUG', 1)
 
-ALLOWED_HOSTS = []
 
+ALLOWED_HOSTS = [
+                "localhost",
+                "127.0.0.1",
+                "0.0.0.0",
+                "*"
+            ]
+                
 
 # Application definition
 
@@ -78,8 +85,13 @@ WSGI_APPLICATION = 'chainscan.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE':  os.environ.get("ENGINE", 'django.db.backends.sqlite3'),
+        'NAME': os.environ.get("POSTGRES_NAME",  os.path.join(BASE_DIR, 'db.sqlite3')),
+
+        'USER': os.environ.get('POSTGRES_USER'),
+        'PASSWORD': os.environ.get('POSTGRES_PASSWORD'),
+        'HOST': os.environ.get('POSTGRES_HOST', 'db'),
+        'PORT': os.environ.get('POSTGRES_PORT', 5432),
     }
 }
 

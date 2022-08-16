@@ -32,7 +32,7 @@ class CompareForm(forms.Form):
 
     pair = forms.CharField( initial = 'USDT_USDC', required = True)
     blockchains = forms.MultipleChoiceField(choices = BLOCKCHAINS, widget=forms.CheckboxSelectMultiple, initial = BLOCKCHAINS[0])
-    dexs = forms.MultipleChoiceField(choices = DEXs, widget=forms.CheckboxSelectMultiple, initial = DEXs[0])
+    dexs = forms.MultipleChoiceField(choices = DEXs, widget=forms.CheckboxSelectMultiple, initial = DEXs[0] if DEXs else '')
     compare_param = forms.ChoiceField( choices = COMPARE_PARAMS)
     start = forms.DateTimeField(input_formats=["%d-%m-%Y %H:%M"], initial='25-09-2022 20:20')
     end = forms.DateTimeField( input_formats=["%d-%m-%Y %H:%M"], initial = '25-09-2022 20:30')
