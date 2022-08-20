@@ -51,13 +51,12 @@ class Command(BaseCommand):
         INIT_BLOCK = await get_block_by_timestamp_async(w3, self.INIT_TIMESTAMP)
 
         last_block_db = block_model.objects.all().last()
-        log.info(f'get last_block_db: {last_block_db}')
         
         last_block_timestamp = last_block_db.timestamp if last_block_db else self.INIT_TIMESTAMP
         INIT_BLOCK_END = await get_block_by_timestamp_async(w3, int(last_block_timestamp) + step)
-        timers['time_timestamp_block'] = time.time() - tik_timestamp_block
+        timers['time_timestamp_block'] = round(time.time() - tik_timestamp_block,3)
         pairs_block_range = []
-        log.info(f'{time.ctime(self.INIT_TIMESTAMP)}, init_block: {INIT_BLOCK}, init_block_end: {INIT_BLOCK_END}')
+        log.info(f'last_block_timestamp: {time.ctime(int(last_block_timestamp))},  last_block_db: {last_block_db} ')
 
         #########################
         # get last update block in pair from db
@@ -83,20 +82,21 @@ class Command(BaseCommand):
         bsc = BlockChainScan(w3)
 
         # get logs data from blockhain
-        log.info(f'pairs_requests:{len(pairs_requests)}')
+        log.info(f'request: pairs_requests:{len(pairs_requests)}')
         if len(pairs_requests) == 0:
             return 
+        log.info(f'request: block min request: { min(map(lambda r: r[0], pairs_block_range))}, block max request: { max(map(lambda r: r[1], pairs_block_range))}')
         tik_scan = time.time()
         pairs_events = await bsc.get_scan_event_from_blocks_async(pairs_block_range, pairs_requests)
         assert len(pairs_events) == len(pairs), '"update_balance" len(pairs_events) == len(pairs)'
-        timers['time_scan'] = time.time() - tik_scan
+        timers['time_scan'] = round(time.time() - tik_scan,3)
         #########################
         # get blocks data from db
         blocks_qs = block_model.objects.all()
         last_block_number_in_blocks = blocks_qs.last().number + 1 if blocks_qs.last() else INIT_BLOCK
 
         block_end = max(map(lambda r: r[1], pairs_block_range))
-        log.info(f'last_block_number_in_blocks:{last_block_number_in_blocks}, block_end:{block_end}')
+        log.info(f'DB: block_range:[{last_block_number_in_blocks}:{block_end}] blocks count: {block_end - last_block_number_in_blocks }')
 
         tik_get_block = time.time()
         if last_block_number_in_blocks < block_end:
@@ -110,7 +110,7 @@ class Command(BaseCommand):
             obj = block_model.objects.bulk_create(data_blocks_for_db_save)
             # get updated data drom bd
             blocks_qs = block_model.objects.all()
-        timers['time_get_block'] = time.time() - tik_get_block
+        timers['time_get_block'] = round(time.time() - tik_get_block,3)
 
 
         #########################
@@ -131,7 +131,7 @@ class Command(BaseCommand):
 
         obj = sync_event_model.objects.bulk_create(data_for_db_save)
 
-        timers['time_all'] = time.time() - tik
+        timers['time_all'] = round(time.time() - tik, 3)
         self.stdout.write(f"Pairs updaed, len data {len(data_for_db_save)} network:{network_name}, {timers}" )
 
 
@@ -146,10 +146,10 @@ class Command(BaseCommand):
 
         while True:
             for name in netowrks_name:
-                    # try:
+                    try:
                         asyncio.run(self.run_session(name))
-                    # except Exception as e:
-                        # log.error(f'ERROR: {e}')
+                    except Exception as e:
+                        log.error(f'ERROR: {e}')
 
             sleep = 5
             log.info(f'sleeping: {sleep}')   

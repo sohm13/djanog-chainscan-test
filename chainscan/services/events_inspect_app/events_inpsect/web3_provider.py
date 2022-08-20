@@ -59,8 +59,7 @@ class MyWeb3(Web3):
                 modules: Optional[dict[str, Union[Type[Module], Sequence[Any]]]] = None,
         ):
         pass
-    
-    
+
     def get_web3_args(self):
         return self.web3_args
 

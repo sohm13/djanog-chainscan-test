@@ -8,9 +8,8 @@ NETWORKS = {
     'timestamp_step': 500,
     'bunch_blocks_limit': 5000,
     'bsc': {
-        # 'http_url': 'https://bsc-dataseed.binance.org/',
-        'http_url': f'https://bsc--mainnet--rpc-archive.datahub.figment.io/apikey/{getenv("DATAHUB_KEY")}',
-        'ws_url': f'wss://bsc--mainnet--ws.datahub.figment.io/apikey/{getenv("DATAHUB_KEY")}',
+        'http_url': f'https://bsc--mainnet--rpc-archive.datahub.figment.io/apikey/{getenv("DATAHUB_KEY")}' if getenv("DATAHUB_KEY", None) else 'https://bsc-dataseed.binance.org/',
+        'ws_url': f'wss://bsc--mainnet--ws.datahub.figment.io/apikey/{getenv("DATAHUB_KEY")}' if getenv("DATAHUB_KEY", None) else None,
 
         'factories': {
             'pancakeswap': '0xca143ce32fe78f1f7019d7d551a6402fc5350c73',
