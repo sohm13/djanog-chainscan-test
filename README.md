@@ -1,15 +1,33 @@
 
+```
+Смысл, собираем данные из блокченов(пример https://bscscan.com/),
+собираем траназкции где есть сделки(обмены токенов),
+собираем результаты обменов в бд
+```
+```
+импользуем services.events_inspect_app обновляем дб;
+    - management/commands/add_pairs -> to models.BaseEthPair
+    - management/commands/update_db_async -> to models.BaseBlock, models.BaseEthSyncEvent
 
-    # чтобы тестового запустить 
-    '''
-    pip install -r requirements.txt
-    # ongoing loop
-    python run_app_script.py
-    # ongoing loop
-    python run_server.py #
-    '''
-    Берем данный с блокчейнов при помощи scripts.events_inspect и запысвает в ДБ
-    в scripts.events_inspect config настравиваем какие данные брать
-    С ДБ идет отображения через views
+services.events_inspect_app.events_inspect.config - настройки какие данные собирать
+```
 
-    update_db - запускает бесконечный цикл, который запоняет базу данных
+```
+views:
+    BscListView from models.BaseEthPair
+    AuroraListView from models.BaseEthPair
+    bsc_pair_detail form models.BaseEthSyncEvent 
+    aurora_pair_detail form models.BaseEthSyncEvent 
+```
+
+  ### чтобы тестового запустить 
+  ```
+  pip install -r requirements.txt
+  ### ongoing loop
+  python run_app_script.py
+  ### ongoing loop
+  python run_server.py #
+  ```
+
+
+ 

@@ -1,4 +1,5 @@
 from pydantic import BaseModel
+from dataclasses import dataclass
 
 class Pair(BaseModel):
     address: str
@@ -26,15 +27,18 @@ class Block(BaseModel):
     gas_used: str
 
 
+# @dataclass
 class Token(BaseModel):
     address: str
     label: str
     decimals: int = None
 
+# @dataclass
 class Factory(BaseModel):
     address: str
     label: str
 
+# @dataclass
 class PairDex(BaseModel):
     address: str
     label: str

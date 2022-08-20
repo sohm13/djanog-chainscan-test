@@ -18,7 +18,7 @@ class EthEvent:
         self.w3 = web3
 
     def pars_sync_event(self, event: LogReceipt)->SyncEvent:
-        reserves = abi_decode(['uint112', 'uint112'], event.data)
+        reserves = abi_decode(['uint112', 'uint112'], event.data if isinstance(event.data, str) else event.data.hex())
         return SyncEvent(
             reserve0 = reserves[0],
             reserve1 = reserves[1],
@@ -39,6 +39,16 @@ class EthEvent:
 
     def sync_event_from_blocks_filter(self, pair_address: str, block_start:int, block_end: int) -> Filter:
         return self.w3.eth.filter({
+            'address':pair_address,
+            'fromBlock': block_start,
+            'toBlock': block_end,
+            "topics":[
+                EventLogsId.Sync,
+            ]
+        })
+
+    async def get_sync_logs_async(self, pair_address: str, block_start:int, block_end: int) -> list[LogReceipt]:
+        return  await self.w3.eth.get_logs({
             'address':pair_address,
             'fromBlock': block_start,
             'toBlock': block_end,

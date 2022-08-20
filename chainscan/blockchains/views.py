@@ -6,11 +6,6 @@ from django.views.generic.detail import DetailView
 
 import pandas as pd
 
-from .scripts.events_inspect.blockchain_scan import BlockChainScan
-from .scripts.events_inspect.web3_provider import MyWeb3
-from .scripts.events_inspect.schemas import Pair
-
-
 from .models import BSCPair, BscEthSyncEvent, AuroraPair, AuroraEthSyncEvent, NETWORK_MODELS_MAP
 from .forms import CompareForm
 
@@ -18,6 +13,7 @@ import time
 
 def index(request):
     return render(request, 'blockchains/index.html')
+
 
 
 class BscListView(ListView):

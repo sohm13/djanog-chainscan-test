@@ -8,7 +8,8 @@ NETWORKS = {
     'timestamp_step': 500,
     'bunch_blocks_limit': 5000,
     'bsc': {
-        'http_url': 'https://bsc-dataseed.binance.org/',
+        # 'http_url': 'https://bsc-dataseed.binance.org/',
+        'http_url': f'https://bsc--mainnet--rpc-archive.datahub.figment.io/apikey/{getenv("DATAHUB_KEY")}',
         'ws_url': f'wss://bsc--mainnet--ws.datahub.figment.io/apikey/{getenv("DATAHUB_KEY")}',
 
         'factories': {
@@ -22,7 +23,6 @@ NETWORKS = {
             'ETH':'0x2170Ed0880ac9A755fd29B2688956BD959F933F8',
             'CAKE':'0x0E09FaBB73Bd3Ade0a17ECC321fD13a19e81cE82',
             'FIL':'0x0D8Ce2A99Bb6e3B7Db580eD848240e4a0F9aE153',
-            'DOGE':'0xbA2aE424d960c26247Dd6c32edC70B295c744C43',
             },
         'generate_pair_params': {
             # tokens_mixin_list include in all combinations

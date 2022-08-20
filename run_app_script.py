@@ -6,5 +6,5 @@ os.system("python ./chainscan/manage.py makemigrations")
 os.system("python ./chainscan/manage.py migrate")
 
 os.system('python ./chainscan/manage.py add_pairs')
-os.system('python ./chainscan/manage.py update_db') # loop
+os.system('python ./chainscan/manage.py update_db_async') # loop
 

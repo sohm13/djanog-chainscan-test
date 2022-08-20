@@ -4,10 +4,10 @@ import time
 
 from blockchains.models import NETWORK_MODELS_MAP
 
-from blockchains.scripts.events_inspect.web3_provider import MyWeb3
-from blockchains.scripts.events_inspect.schemas import SkipToken
-from blockchains.scripts.events_inspect.config import NETWORKS
-from blockchains.scripts.events_inspect.helper import get_pairs_config, get_pairs
+from services.events_inspect_app.events_inpsect.web3_provider import MyWeb3
+from services.events_inspect_app.events_inpsect.schemas import SkipToken
+from services.events_inspect_app.events_inpsect.config import NETWORKS
+from services.events_inspect_app.events_inpsect.helper import get_pairs_config, get_pairs
 
 
 

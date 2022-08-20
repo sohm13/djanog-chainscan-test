@@ -7,10 +7,17 @@ from services.events_inspect_app.events_inpsect.blockchain_scan import BlockChai
 from services.events_inspect_app.events_inpsect.web3_provider import MyWeb3
 from services.events_inspect_app.events_inpsect.schemas import Pair
 from services.events_inspect_app.events_inpsect.config import NETWORKS
-from services.events_inspect_app.events_inpsect.utils import get_block_by_timestamp
+from services.events_inspect_app.events_inpsect.utils import get_block_by_timestamp_async
 
 import logging
 import time
+import asyncio
+import platform
+from aiohttp  import ClientSession
+
+
+if platform.system()=='Windows':
+    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
 
 log = logging.getLogger(__name__)
@@ -23,7 +30,7 @@ class Command(BaseCommand):
     INIT_TIMESTAMP = NETWORKS['init_timestamp']
 
 
-    def pairs_update(self, network_name: str = 'bsc'):
+    async def pairs_update_async(self, network_name: str = 'bsc', session = None):
         tik = time.time()
         timers = {}
         log.info(f'netowrk {network_name} start to update pair')
@@ -33,17 +40,21 @@ class Command(BaseCommand):
 
         pairs = pair_model.objects.all()
 
-
-        w3 = MyWeb3(network_name).get_http_provider()
+        w3 = MyWeb3(network_name).get_http_provider_async()
+        if session:
+            await w3.provider.cache_async_session(session)
         step = NETWORKS['timestamp_step']
 
         tik_timestamp_block = time.time()
-        INIT_BLOCK = get_block_by_timestamp(w3, self.INIT_TIMESTAMP)
+        log.info(f'get_block_by_timestamp_async...')
+
+        INIT_BLOCK = await get_block_by_timestamp_async(w3, self.INIT_TIMESTAMP)
+
         last_block_db = block_model.objects.all().last()
         log.info(f'get last_block_db: {last_block_db}')
         
         last_block_timestamp = last_block_db.timestamp if last_block_db else self.INIT_TIMESTAMP
-        INIT_BLOCK_END = get_block_by_timestamp(w3, int(last_block_timestamp) + step)
+        INIT_BLOCK_END = await get_block_by_timestamp_async(w3, int(last_block_timestamp) + step)
         timers['time_timestamp_block'] = time.time() - tik_timestamp_block
         pairs_block_range = []
         log.info(f'{time.ctime(self.INIT_TIMESTAMP)}, init_block: {INIT_BLOCK}, init_block_end: {INIT_BLOCK_END}')
@@ -76,7 +87,7 @@ class Command(BaseCommand):
         if len(pairs_requests) == 0:
             return 
         tik_scan = time.time()
-        pairs_events = bsc.get_scan_event_from_blocks(pairs_block_range, pairs_requests)
+        pairs_events = await bsc.get_scan_event_from_blocks_async(pairs_block_range, pairs_requests)
         assert len(pairs_events) == len(pairs), '"update_balance" len(pairs_events) == len(pairs)'
         timers['time_scan'] = time.time() - tik_scan
         #########################
@@ -90,7 +101,7 @@ class Command(BaseCommand):
         tik_get_block = time.time()
         if last_block_number_in_blocks < block_end:
             # get blocks data from blockhain for update db
-            blocks_chain = bsc.get_blocks(
+            blocks_chain = await bsc.get_blocks_async(
                         block_start = last_block_number_in_blocks,
                         block_end = block_end
                         )
@@ -124,17 +135,22 @@ class Command(BaseCommand):
         self.stdout.write(f"Pairs updaed, len data {len(data_for_db_save)} network:{network_name}, {timers}" )
 
 
+
+
+    async def run_session(self, name):
+        async with ClientSession() as session:
+            await self.pairs_update_async(name, session)
+
     def handle(self, *args, **options):
         netowrks_name = NETWORKS['work_networks']
+
         while True:
-
             for name in netowrks_name:
-                try:
-                    self.pairs_update(name)
-                except Exception as e:
-                    log.error(f'ERROR: {e}')
+                    # try:
+                        asyncio.run(self.run_session(name))
+                    # except Exception as e:
+                        # log.error(f'ERROR: {e}')
 
-            sleep = 30
+            sleep = 5
             log.info(f'sleeping: {sleep}')   
             time.sleep(sleep)
-
