@@ -9,14 +9,20 @@ from services.events_inspect_app.events_inpsect.schemas import SkipToken
 from services.events_inspect_app.events_inpsect.config import NETWORKS
 from services.events_inspect_app.events_inpsect.helper import get_pairs_config, get_pairs_async
 
+import logging
 import asyncio
+
+log = logging.getLogger(__name__)
+log.info
 
 
 class Command(BaseCommand):
 
     async def add_pairs_async(self, network_name: str = 'bsc'):
         tik = time.time()
-        print('network_name', network_name)
+        log.info('--------------------')
+        log.info(f'network_name {network_name}' )
+        print(f'network_name {network_name}' )
         pairs_config = get_pairs_config(network_name)
         TOKENS = pairs_config.tokens_other
         TOKENS_MIXIN = pairs_config.tokens_mixin
@@ -34,6 +40,9 @@ class Command(BaseCommand):
 
         web3 = MyWeb3(network_name).get_http_provider_async()
         new_pairs = await get_pairs_async(web3, TOKENS, TOKENS_MIXIN, FACTORIES, skip_tokens)
+        print(f'new pairs: {len(new_pairs)}')
+        if len(new_pairs) == 0:
+            return None
 
         pairs_prepare_for_db = [
                 pair_model(

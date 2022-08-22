@@ -32,7 +32,8 @@ class Command(BaseCommand):
     INIT_BLOCKS = {network: None for network in NETWORKS['work_networks']} 
 
     async def pairs_update_by_blocks_asunc(self, network_name: str = 'bsc', session = None) -> None:
-
+        
+        log.info('-----------------------------------------')
         log.info(f'netowrk {network_name} start to update pairs')
         pair_model = NETWORK_MODELS_MAP[network_name]['pair_model']
         block_model = NETWORK_MODELS_MAP[network_name]['block_model']
@@ -43,18 +44,19 @@ class Command(BaseCommand):
         if session:
             await w3.provider.cache_async_session(session)
         block_step = NETWORKS['block_steps'][network_name]
-        block_end = await w3.eth.block_number
+        block_end_last_chain = await w3.eth.block_number
 
         if not self.INIT_BLOCKS[network_name]:
             self.INIT_BLOCKS[network_name] = await get_block_by_timestamp_async(w3, self.INIT_TIMESTAMP)
         init_block = self.INIT_BLOCKS[network_name]
         pairs = pair_model.objects.all()
-        # last_block_db = block_model.objects.all().last()
+        last_block_db = block_model.objects.all().last()
         log.info(f'pairs from db: {len(pairs)}')
 
         #########################
         # get last update block in pair from db
         pairs_block_range = []
+        pairs_block_start_dict = {}
         for pair in pairs:
             pair_sync = sync_event_model.objects.filter(pair_address = pair.pair_address).last()
             block_start = init_block
@@ -62,12 +64,13 @@ class Command(BaseCommand):
             if pair_sync:
                 block_start = pair_sync.block_number + 1
 
-            # block_last_block_start_diff = last_block_db.number - block_start
-            # block_end = block_start + block_step  if block_last_block_start_diff > block_step else block_last_block_start_diff
+            block_start = block_start if block_start <= last_block_db.number else last_block_db.number
+            next_block_end_max = block_start + block_step
+            block_end = next_block_end_max if next_block_end_max > block_end_last_chain else block_end_last_chain
             # blocks_limit=  NETWORKS['bunch_blocks_limit'] - (block_end - block_start)
             # if blocks_limit < 0:
             #     block_end += blocks_limit
-
+            pairs_block_start_dict[pair.pair_address] = block_start
             pairs_block_range.append([block_start, block_end])  
         
         # prepare data for request to blockchain
@@ -79,16 +82,17 @@ class Command(BaseCommand):
 
         scan = BlockChainScan(w3)
         block_start_min =  min(map(lambda r: r[0], pairs_block_range))
-        # block_end_max = max(map(lambda r: r[1], pairs_block_range))
-        log.info(f'request: block min request: {block_start_min}, block max request: {block_end }, blcoks to scan:{block_end-block_start_min}, block_step:{block_step}')
+        block_end_max = max(map(lambda r: r[1], pairs_block_range))
+        log.info(f'request: block min request: {block_start_min}, block max request: {block_end }, max blcoks to scan:{block_end_max-block_start_min}, block_step:{block_step}')
 
         # pair_logs = await scan.get_scan_event_from_blocks_async(pairs_block_range, pairs_requests)
         pair_logs = await scan.get_scan_event_from_blocks_one_bunch_async(block_start_min, block_end, pairs_requests, block_step)
+       
         #########################
         # get blocks data from db
         blocks_qs = block_model.objects.all()
         last_block_number_in_blocks = blocks_qs.last().number + 1 if blocks_qs.last() else init_block
-        last_block = pair_logs[-1].block_number if pair_logs else block_end
+        last_block = block_end_last_chain #pair_logs[-1].block_number if pair_logs else block_end
         log.info(f' last block from db: {blocks_qs.last()}, last_block_number_in_blocks:{last_block_number_in_blocks}')
         
         if last_block_number_in_blocks < last_block:
@@ -113,6 +117,8 @@ class Command(BaseCommand):
 
         data_for_db_save = []
         for pair_log in pair_logs:
+            if pair_log.block_number <  pairs_block_start_dict[pair_log.pair_address]:
+                continue
             log_for_db = sync_event_model(**pair_log.dict(),
                 updated_at=timezone.now(),
                 pair_model=pair_model.objects.get(pair_address=pair_log.pair_address),

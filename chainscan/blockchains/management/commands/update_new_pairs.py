@@ -34,7 +34,7 @@ class Command(BaseCommand):
     INIT_BLOCKS = {network: None for network in NETWORKS['work_networks']} 
 
     async def update_new_pairs_async(self, network_name: str = 'bsc'):
-        tik = time.time()
+        log.info('----------------------------------------------------------------')
         log.info(f'network_name {network_name}')
         pairs_config = get_pairs_config(network_name)
         TOKENS = pairs_config.tokens_other
@@ -48,6 +48,8 @@ class Command(BaseCommand):
 
         qs_pairs = pair_model.objects.filter(pair_updated=False)
         log.info(f'new pairs for update: {len(qs_pairs)}')
+        if len(qs_pairs) == 0:
+            return None
         web3: AsyncHTTPProvider = MyWeb3(network_name).get_http_provider_async()
 
         scan = BlockChainScan(web3)

@@ -11,24 +11,6 @@ from .forms import CompareForm
 
 import time
 
-def index(request):
-    return render(request, 'blockchains/index.html')
-
-
-
-class BscListView(ListView):
-    model = BSCPair
-    template_name = 'blockchains/bsc_list.html'
-    context_object_name = 'pairs'
-    paginate_by = 20
-
-class AuroraListView(ListView):
-    model = AuroraPair
-    template_name = 'blockchains/aurora_list.html'
-    context_object_name = 'pairs'
-    paginate_by = 20
-
-
 def pair_sync_event_to_df(pair: BscEthSyncEvent, decimals_token0: int=18, decimals_token1: int=18):
     # print('pair:', pair)
     # tik = time.time()
@@ -55,7 +37,7 @@ def pair_sync_event_to_df(pair: BscEthSyncEvent, decimals_token0: int=18, decima
         'block_number', 
         'transaction_index', 
         'price', 
-        # 'pair_address', 
+        'pair_address', 
         'reserve0', 
         'reserve1',
         'swap0',
@@ -67,9 +49,38 @@ def pair_sync_event_to_df(pair: BscEthSyncEvent, decimals_token0: int=18, decima
     return pd.DataFrame(columns=columns_for_desplay)
 
 
-def bsc_pair_detail(request: HttpRequest, pk: int):
+
+
+
+
+
+
+def index(request):
+    return render(request, 'blockchains/index.html')
+
+
+class BscListView(ListView):
+    model = BSCPair
+    template_name = 'blockchains/bsc_list.html'
+    context_object_name = 'pairs'
+    paginate_by = 20
+
+class AuroraListView(ListView):
+    model = AuroraPair
+    template_name = 'blockchains/aurora_list.html'
+    context_object_name = 'pairs'
+    paginate_by = 20
+
+
+def bsc_pair_detail(request: HttpRequest, pk: int=None, pair_symbol: str = None):
     tik = time.time()
-    pair_events = BscEthSyncEvent.objects.filter(pair_model=pk).order_by('-id').select_related('block_model')
+    pair_events = []
+    event_model = BscEthSyncEvent
+    if pk:
+        pair_events = event_model.objects.filter(pair_model=pk).order_by('-block_number').select_related('block_model')
+    if pair_symbol:
+        pair_events = event_model.objects.filter(pair_model__pair_symbol=pair_symbol).order_by('-block_number').select_related('block_model')
+
     if len(pair_events) == 0:
         return render(request, 'blockchains/not_pair_events.html') 
     pair_model = pair_events[0].pair_model
@@ -78,14 +89,22 @@ def bsc_pair_detail(request: HttpRequest, pk: int):
     context = {
         'pair_df': pair_df,
         'ticker': pair_model.pair_symbol,
-        'address': pair_model.pair_address,
+        'address':pair_df['pair_address'].unique() #pair_model.pair_address,
     }
     print('***time bsc pair detail:', time.time() - tik)
     
     return render(request, 'blockchains/bsc_detail.html', context=context)
 
-def aurora_pair_detail(request: HttpRequest, pk: int):
-    pair_events = AuroraEthSyncEvent.objects.filter(pair_model=pk).order_by('-id').select_related('block_model')
+def aurora_pair_detail(request: HttpRequest, pk: int=None, pair_symbol: str = None):
+    pair_events = []
+    event_model = AuroraEthSyncEvent
+    print('request', request)
+    if pk:
+        pair_events = event_model.objects.filter(pair_model=pk).order_by('-block_number').select_related('block_model')
+    if pair_symbol:
+        pair_events = event_model.objects.filter(pair_model__pair_symbol=pair_symbol).order_by('-block_number').select_related('block_model')
+
+    # pair_events = AuroraEthSyncEvent.objects.filter(pair_model=pk).order_by('-id').select_related('block_model')
     if len(pair_events) == 0:
         return render(request, 'blockchains/not_pair_events.html') 
     pair_model = pair_events[0].pair_model
@@ -97,8 +116,6 @@ def aurora_pair_detail(request: HttpRequest, pk: int):
     }
     
     return render(request, 'blockchains/aurora_detail.html', context=context)
-
-
 
 def compare_view(request: HttpRequest):
     context = {}
@@ -146,11 +163,13 @@ def compare_view(request: HttpRequest):
                 _data_add = df_event[[data['compare_param'], 'timestamp']] 
                 _data_add.rename(columns={data['compare_param']: pair.factory_symbol, 'timestamp': f'timestamp_{pair.factory_symbol}'}, inplace=True)
                 df_param.append(_data_add)
+            # print(df_param)
             df_chains_param.extend(df_param)
             print('**make df time:', time.time()-tik)
 
         df_concat =  pd.concat(df_chains_param, axis=1)
         # print(df_concat.head())
+
         context['df'] = df_concat
         context['compare_param'] = data['compare_param']
         

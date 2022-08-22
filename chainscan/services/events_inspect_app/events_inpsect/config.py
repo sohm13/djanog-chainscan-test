@@ -8,8 +8,8 @@ NETWORKS = {
     'init_timestamp': int(time.time())-5000, 
     'timestamp_step': 500,
     'block_steps': {
-        'bsc':5000,
-        'aurora':5000 *3,
+        'bsc':3000,
+        'aurora':3000 ,
     },
     'bunch_blocks_limit': 20000,
     'bsc': {
