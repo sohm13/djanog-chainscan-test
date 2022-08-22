@@ -6,7 +6,7 @@ from django.views.generic.detail import DetailView
 
 import pandas as pd
 
-from .models import BSCPair, BscEthSyncEvent, AuroraPair, AuroraEthSyncEvent, NETWORK_MODELS_MAP
+from .models import BSCPair, BscEthSyncEvent, AuroraPair, AuroraEthSyncEvent, NETWORK_MODELS_MAP, BSCBlock
 from .forms import CompareForm
 
 import time
@@ -31,14 +31,11 @@ class AuroraListView(ListView):
 
 def pair_sync_event_to_df(pair: BscEthSyncEvent, decimals_token0: int=18, decimals_token1: int=18):
     # print('pair:', pair)
+    # tik = time.time()
     pre_to_pandas = [obj.__dict__ for obj in pair ]
     # deep dependency
     timestamps = [p.block_model.timestamp for p in pair]
-    symbols = [p.pair_model.pair_symbol for p in pair]
-
-    # print('len(pre_to_pandas)', len(pre_to_pandas))
-    # if len(pre_to_pandas) == 0:
-    #     return None
+    # print('*** qs to dict time', time.time() - tik)
 
 
     df = pd.DataFrame(pre_to_pandas)
@@ -106,7 +103,6 @@ def compare_view(request: HttpRequest):
 
     if request.method == 'GET':
 
-
         chains = [ (network, NETWORK_MODELS_MAP[network]['pair_model'].objects.all()) for network in NETWORK_MODELS_MAP.keys()]
 
         dexs = []
@@ -133,17 +129,23 @@ def compare_view(request: HttpRequest):
         df_chains_param = []
         for network_name, chain in chains:
             pairs = chain['pair_model'].objects.filter(pair_symbol=data['pair'])
-            event_pairs = [chain['eth_sync_event_model'].objects.filter(pair_model=pair.pk) for pair in pairs]
+            tik = time.time()
+            event_pairs = [chain['eth_sync_event_model'].objects.filter(pair_model=pair.pk).select_related('block_model') for pair in pairs]
             assert len(pairs) == len(event_pairs), "len(pairs) == len(event_pairs) in 'compare_view'"
+            print('**event_pairs',  sum([len(p) for p in event_pairs]), 'time', time.time() - tik)
 
+            tik = time.time()
             df_event_pairs = [pair_sync_event_to_df(event_pairs[i], pairs[i].decimals) for i in range(len(pairs))]
+            print('**df_event_pairs time:', time.time() - tik)
 
+            tik = time.time()
             df_param = []
             for df_event, pair in zip(df_event_pairs, pairs):
                 _data_add = df_event[[data['compare_param'], 'timestamp']] 
                 _data_add.rename(columns={data['compare_param']: pair.factory_symbol, 'timestamp': f'timestamp_{pair.factory_symbol}'}, inplace=True)
                 df_param.append(_data_add)
             df_chains_param.extend(df_param)
+            print('**make df time:', time.time()-tik)
 
         df_concat =  pd.concat(df_chains_param, axis=1)
         # print(df_concat.head())
