@@ -1,15 +1,21 @@
 from os import getenv
-
+import time
 
 # avalibale networks
 NETWORKS = {
     'work_networks': ['bsc', 'aurora'],
-    'init_timestamp': 1655000000, 
+    # 'init_timestamp': 1655000000, 
+    'init_timestamp': int(time.time())-5000, 
     'timestamp_step': 500,
-    'bunch_blocks_limit': 5000,
+    'block_steps': {
+        'bsc':5000,
+        'aurora':5000 *3,
+    },
+    'bunch_blocks_limit': 20000,
     'bsc': {
-        'http_url': f'https://bsc--mainnet--rpc-archive.datahub.figment.io/apikey/{getenv("DATAHUB_KEY")}' if getenv("DATAHUB_KEY", None) else 'https://bsc-dataseed.binance.org/',
-        'ws_url': f'wss://bsc--mainnet--ws.datahub.figment.io/apikey/{getenv("DATAHUB_KEY")}' if getenv("DATAHUB_KEY", None) else None,
+        'http_url': getenv("RPC_URI_HTTP") if getenv("RPC_URI_HTTP", None) else 'https://bsc-dataseed.binance.org/',
+        'ws_url': getenv("RPC_URI_WS") if getenv("RPC_URI_WS", None) else None,
+        'requests_limit_per_min': 2000,
 
         'factories': {
             'pancakeswap': '0xca143ce32fe78f1f7019d7d551a6402fc5350c73',
@@ -33,6 +39,7 @@ NETWORKS = {
     'aurora': {
         'http_url': 'https://mainnet.aurora.dev',
         'ws_url': 'wss://mainnet.aurora.dev',
+        'requests_limit_per_min': 3000,
         
         'factories': {
             'trisolaris':'0xc66F594268041dB60507F00703b152492fb176E7',

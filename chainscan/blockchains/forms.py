@@ -1,5 +1,5 @@
 from django import forms
-from blockchains.models import AuroraPair, BSCPair, NETWORK_MODELS_MAP
+# from blockchains.models import NETWORK_MODELS_MAP
 
 
 COMPARE_PARAMS = (
@@ -15,13 +15,12 @@ BLOCKCHAINS = (
 
 
 
-chains = [ (network, NETWORK_MODELS_MAP[network]['pair_model'].objects.all()) for network in NETWORK_MODELS_MAP.keys()]
-
+# chains = [ (network, NETWORK_MODELS_MAP[network]['pair_model'].objects.all()) for network in NETWORK_MODELS_MAP.keys()]
 
 dexs = []
-for netowrk, chain in chains:
-    for pair in chain:
-        dexs.append(pair.factory_symbol + f'_{netowrk}')
+# for netowrk, chain in chains:
+#     for pair in chain:
+#         dexs.append(pair.factory_symbol + f'_{netowrk}')
 dexs = set(dexs)
 DEXs = [(dex, dex.upper()) for dex in dexs]
 

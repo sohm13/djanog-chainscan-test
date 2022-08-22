@@ -20,6 +20,8 @@ class BaseEthPair(models.Model):
     decimals = models.IntegerField(default=18)
     updated_at = models.DateTimeField(auto_created=True, null=True)
     
+    pair_updated = models.BooleanField(default=False, null=True)
+
     class Meta:
         abstract = True
 

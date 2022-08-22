@@ -7,14 +7,14 @@ from blockchains.models import NETWORK_MODELS_MAP
 from services.events_inspect_app.events_inpsect.web3_provider import MyWeb3
 from services.events_inspect_app.events_inpsect.schemas import SkipToken
 from services.events_inspect_app.events_inpsect.config import NETWORKS
-from services.events_inspect_app.events_inpsect.helper import get_pairs_config, get_pairs
+from services.events_inspect_app.events_inpsect.helper import get_pairs_config, get_pairs_async
 
-
+import asyncio
 
 
 class Command(BaseCommand):
 
-    def add_pairs(self, network_name: str = 'bsc'):
+    async def add_pairs_async(self, network_name: str = 'bsc'):
         tik = time.time()
         print('network_name', network_name)
         pairs_config = get_pairs_config(network_name)
@@ -32,8 +32,8 @@ class Command(BaseCommand):
             factory_address = qs_pair.factory_address
         ) for qs_pair in qs_pairs ]
 
-        web3 = MyWeb3(network_name).get_http_provider()
-        new_pairs = get_pairs(web3, TOKENS, TOKENS_MIXIN, FACTORIES, skip_tokens)
+        web3 = MyWeb3(network_name).get_http_provider_async()
+        new_pairs = await get_pairs_async(web3, TOKENS, TOKENS_MIXIN, FACTORIES, skip_tokens)
 
         pairs_prepare_for_db = [
                 pair_model(
@@ -62,5 +62,5 @@ class Command(BaseCommand):
         netowkr_names = NETWORKS['work_networks']
 
         for network_name in netowkr_names:
-            self.add_pairs(network_name)
+            asyncio.run(self.add_pairs_async(network_name))
 
