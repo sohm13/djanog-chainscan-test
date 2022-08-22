@@ -68,7 +68,8 @@ def pair_sync_event_to_df(pair: BscEthSyncEvent, decimals_token0: int=18, decima
 
 
 def bsc_pair_detail(request: HttpRequest, pk: int):
-    pair_events = BscEthSyncEvent.objects.filter(pair_model=pk).order_by('-id')
+    tik = time.time()
+    pair_events = BscEthSyncEvent.objects.filter(pair_model=pk).order_by('-id').select_related('block_model')
     if len(pair_events) == 0:
         return render(request, 'blockchains/not_pair_events.html') 
     pair_model = pair_events[0].pair_model
@@ -79,11 +80,12 @@ def bsc_pair_detail(request: HttpRequest, pk: int):
         'ticker': pair_model.pair_symbol,
         'address': pair_model.pair_address,
     }
+    print('***time bsc pair detail:', time.time() - tik)
     
     return render(request, 'blockchains/bsc_detail.html', context=context)
 
 def aurora_pair_detail(request: HttpRequest, pk: int):
-    pair_events = AuroraEthSyncEvent.objects.filter(pair_model=pk).order_by('-id')
+    pair_events = AuroraEthSyncEvent.objects.filter(pair_model=pk).order_by('-id').select_related('block_model')
     if len(pair_events) == 0:
         return render(request, 'blockchains/not_pair_events.html') 
     pair_model = pair_events[0].pair_model
