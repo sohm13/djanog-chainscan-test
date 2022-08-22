@@ -29,9 +29,11 @@ DEXs = [(dex, dex.upper()) for dex in dexs]
 
 class CompareForm(forms.Form):
 
+
     pair = forms.CharField( initial = 'USDT_USDC', required = True)
     blockchains = forms.MultipleChoiceField(choices = BLOCKCHAINS, widget=forms.CheckboxSelectMultiple, initial = BLOCKCHAINS[0])
-    dexs = forms.MultipleChoiceField(choices = DEXs, widget=forms.CheckboxSelectMultiple, initial = DEXs[0] if DEXs else '')
+    # dexs = forms.MultipleChoiceField(choices = DEXs, widget=forms.CheckboxSelectMultiple, initial = DEXs[0] if DEXs else '')
+    dexs = forms.CharField(initial = 'swap', required = True)
     compare_param = forms.ChoiceField( choices = COMPARE_PARAMS)
     start = forms.DateTimeField(input_formats=["%d-%m-%Y %H:%M"], initial='25-09-2022 20:20')
     end = forms.DateTimeField( input_formats=["%d-%m-%Y %H:%M"], initial = '25-09-2022 20:30')

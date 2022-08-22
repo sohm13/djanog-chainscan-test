@@ -7,5 +7,5 @@ os.system("python ./chainscan/manage.py migrate")
 
 os.system('python ./chainscan/manage.py add_pairs')
 os.system('python ./chainscan/manage.py update_new_pairs')
-os.system('python ./chainscan/manage.py update_db_loop') 
+os.system('python ./chainscan/manage.py update_db_loop')
 

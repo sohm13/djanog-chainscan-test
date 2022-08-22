@@ -105,7 +105,20 @@ def compare_view(request: HttpRequest):
     context = {}
 
     if request.method == 'GET':
-        context['form']= CompareForm()
+
+
+        chains = [ (network, NETWORK_MODELS_MAP[network]['pair_model'].objects.all()) for network in NETWORK_MODELS_MAP.keys()]
+
+        dexs = []
+        for netowrk, chain in chains:
+            for pair in chain:
+                dexs.append(pair.factory_symbol + f'_{netowrk}')
+        dexs = set(dexs)
+        DEXs = [(dex, dex.upper()) for dex in dexs]
+
+        data = {'dexs': list(dexs) }
+        form = CompareForm(initial=data)
+        context['form']= form
         return render(request, 'blockchains/compare_form.html', context)
 
     form = CompareForm(data=request.POST)
@@ -113,9 +126,10 @@ def compare_view(request: HttpRequest):
 
     if form.is_valid():
         data =  form.cleaned_data
-
-        chains = [ (network, NETWORK_MODELS_MAP[network]) for network in NETWORK_MODELS_MAP.keys()]
-
+        # print('data', data)
+        # print(data['blockchains'])
+        chains = [ (network, NETWORK_MODELS_MAP[network]) for network in NETWORK_MODELS_MAP.keys() if network in data['blockchains'] ]
+       
         df_chains_param = []
         for network_name, chain in chains:
             pairs = chain['pair_model'].objects.filter(pair_symbol=data['pair'])
