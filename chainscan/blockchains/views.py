@@ -23,7 +23,7 @@ def pair_sync_event_to_df(pair: BscEthSyncEvent, decimals_token0: int=18, decima
     df = pd.DataFrame(pre_to_pandas)
     if len(pre_to_pandas) != 0:
         # df = pd.DataFrame(pre_to_pandas)
-        df['timestamp'] = pd.to_datetime(timestamps, unit='s').strftime('%Y-%m-%d %H:%M:%S')
+        df['timestamp'] = pd.to_datetime(timestamps, unit='s')#.strftime('%Y-%m-%d %H:%M:%S')
 
         # print(df.columns)
         df['reserve0'] = df['reserve0'].astype(float) / (10 ** decimals_token0)
@@ -141,8 +141,7 @@ def compare_view(request: HttpRequest):
 
     if form.is_valid():
         data =  form.cleaned_data
-        # print('data', data)
-        # print(data['blockchains'])
+        group_freq = data['groupby_freq'][0]
         chains = [ (network, NETWORK_MODELS_MAP[network]) for network in NETWORK_MODELS_MAP.keys() if network in data['blockchains'] ]
        
         df_chains_param = []
@@ -160,17 +159,26 @@ def compare_view(request: HttpRequest):
             tik = time.time()
             df_param = []
             for df_event, pair in zip(df_event_pairs, pairs):
+                if len(df_event) == 0:
+                    continue
+                # print('df_event', df_event)
                 _data_add = df_event[[data['compare_param'], 'timestamp']] 
-                _data_add.rename(columns={data['compare_param']: pair.factory_symbol, 'timestamp': f'timestamp_{pair.factory_symbol}'}, inplace=True)
-                df_param.append(_data_add)
-            # print(df_param)
+                # _data_add.rename(columns={data['compare_param']: pair.factory_symbol, 'timestamp': f'timestamp_{pair.factory_symbol}'}, inplace=True)
+                _data_add = _data_add.rename(columns={data['compare_param']: pair.factory_symbol})
+                _df_grp = _data_add.groupby(pd.Grouper(key='timestamp', freq=group_freq )).last()
+                df_param.append(_df_grp)
+                print('!',pair.factory_symbol, len(_data_add), len(_df_grp))
             df_chains_param.extend(df_param)
             print('**make df time:', time.time()-tik)
 
+        if len(df_chains_param)  == 0:
+            return render(request, 'blockchains/not_pair_events.html')
         df_concat =  pd.concat(df_chains_param, axis=1)
+        df_concat['time'] = df_concat.index.astype('str')
+    
         # print(df_concat.head())
 
-        context['df'] = df_concat
+        context['df'] = df_concat.iloc[::-1]
         context['compare_param'] = data['compare_param']
         
     return render(request, 'blockchains/compare_view.html', context)
