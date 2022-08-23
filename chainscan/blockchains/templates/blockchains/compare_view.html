@@ -6,6 +6,8 @@
 
 {% block context %}
 
+{% include 'blockchains/chart_line_tw.html' %}
+
 <div class="container">
     {% if errors %}
     <h4> invalid inpute: </h4>
@@ -14,6 +16,7 @@
 
 
     <ul>
+      
         <table class="table table-bordered  table-striped">
           <h4> compare_param is {{ compare_param}} </h4> 
 
@@ -43,7 +46,6 @@
 
 
 </div>
-
 
 
 {% endblock%}

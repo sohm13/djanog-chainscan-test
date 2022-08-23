@@ -1,0 +1,49 @@
+
+
+<div id="container" style="width: 75%;">
+    <canvas id="line-chart-tw"></canvas>
+</div>
+
+  
+  <script src="https://unpkg.com/lightweight-charts@3.4.0/dist/lightweight-charts.standalone.production.js"></script>
+  <script>
+
+
+
+var chart = LightweightCharts.createChart(document.body, {
+	width: 600,
+  height: 300,
+	layout: {
+		backgroundColor: '#ffffff',
+		textColor: 'rgba(33, 56, 77, 1)',
+	},
+	grid: {
+		vertLines: {
+			color: 'rgba(197, 203, 206, 0.7)',
+		},
+		horzLines: {
+			color: 'rgba(197, 203, 206, 0.7)',
+		},
+	},
+	timeScale: {
+		timeVisible: true,
+    secondsVisible: false,
+	},
+});
+
+
+{% for data_tw in datas_tw %}
+  var lineSeries = chart.addLineSeries();
+
+  lineSeries.setData({{data_tw|safe}})
+
+  lineSeries.applyOptions({
+      priceFormat: {
+          type: 'price',
+          precision: 6,
+          minMove: 0.000001,
+      },
+  });
+{% endfor %}
+
+  </script>

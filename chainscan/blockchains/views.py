@@ -3,6 +3,7 @@ from django.http import HttpRequest
 from django.core.paginator import Paginator
 from django.views.generic.list import ListView
 from django.views.generic.detail import DetailView
+import json
 
 import pandas as pd
 
@@ -11,14 +12,39 @@ from .forms import CompareForm
 
 import time
 
+
+def make_dfs_for_tw(df,  to_groupby=False, to_json=True, dropna=True):
+    '''
+        make dataframes with each columns
+        return [
+            df['time':index, 'value':col0].to_json(orient="records"),
+            df['time':index, 'value':col1].to_json(orient="records"),
+            ....
+        ]
+    '''
+    new_df = df.copy()
+
+    if to_groupby:
+        new_df = new_df.groupby(pd.Grouper(freq='5s')).last()
+        # index = new_df.index 
+    index = new_df.index.map(lambda x: x.timestamp())
+    dfs = []
+    for col in new_df.columns:
+        tmp_df = pd.DataFrame()
+        tmp_df['time'] = index
+        tmp_df['value'] = new_df[col].to_numpy()
+        tmp_df = tmp_df.dropna()
+        if to_json:
+            dfs.append(tmp_df.to_json(orient="records"))
+        else:
+            dfs.append(tmp_df)
+    return dfs
+
+    
 def pair_sync_event_to_df(pair: BscEthSyncEvent, decimals_token0: int=18, decimals_token1: int=18):
-    # print('pair:', pair)
-    # tik = time.time()
     pre_to_pandas = [obj.__dict__ for obj in pair ]
     # deep dependency
     timestamps = [p.block_model.timestamp for p in pair]
-    # print('*** qs to dict time', time.time() - tik)
-
 
     df = pd.DataFrame(pre_to_pandas)
     if len(pre_to_pandas) != 0:
@@ -48,9 +74,7 @@ def pair_sync_event_to_df(pair: BscEthSyncEvent, decimals_token0: int=18, decima
         return df[columns_for_desplay]
     return pd.DataFrame(columns=columns_for_desplay)
 
-
-
-
+#####################
 
 
 
@@ -85,11 +109,13 @@ def bsc_pair_detail(request: HttpRequest, pk: int=None, pair_symbol: str = None)
         return render(request, 'blockchains/not_pair_events.html') 
     pair_model = pair_events[0].pair_model
     pair_df = pair_sync_event_to_df(pair_events, pair_model.token0_decimals, pair_model.token1_decimals)
-    
+    datas_tw = make_dfs_for_tw(pair_df.set_index('timestamp')[['price']], to_groupby=True)
+
     context = {
         'pair_df': pair_df,
         'ticker': pair_model.pair_symbol,
-        'address':pair_df['pair_address'].unique() #pair_model.pair_address,
+        'address':pair_df['pair_address'].unique(), #pair_model.pair_address,
+        'datas_tw': datas_tw
     }
     print('***time bsc pair detail:', time.time() - tik)
     
@@ -98,21 +124,22 @@ def bsc_pair_detail(request: HttpRequest, pk: int=None, pair_symbol: str = None)
 def aurora_pair_detail(request: HttpRequest, pk: int=None, pair_symbol: str = None):
     pair_events = []
     event_model = AuroraEthSyncEvent
-    print('request', request)
     if pk:
         pair_events = event_model.objects.filter(pair_model=pk).order_by('-block_number').select_related('block_model')
     if pair_symbol:
         pair_events = event_model.objects.filter(pair_model__pair_symbol=pair_symbol).order_by('-block_number').select_related('block_model')
 
-    # pair_events = AuroraEthSyncEvent.objects.filter(pair_model=pk).order_by('-id').select_related('block_model')
     if len(pair_events) == 0:
         return render(request, 'blockchains/not_pair_events.html') 
     pair_model = pair_events[0].pair_model
     pair_df = pair_sync_event_to_df(pair_events, pair_model.token0_decimals, pair_model.token1_decimals)
+    datas_tw = make_dfs_for_tw(pair_df.set_index('timestamp')[['price']], to_groupby=True)
+
     context = {
         'pair_df': pair_df,
         'ticker': pair_model.pair_symbol,
         'address': pair_model.pair_address,
+        'datas_tw': datas_tw
     }
     
     return render(request, 'blockchains/aurora_detail.html', context=context)
@@ -161,26 +188,22 @@ def compare_view(request: HttpRequest):
             for df_event, pair in zip(df_event_pairs, pairs):
                 if len(df_event) == 0:
                     continue
-                # print('df_event', df_event)
                 _data_add = df_event[[data['compare_param'], 'timestamp']] 
-                # _data_add.rename(columns={data['compare_param']: pair.factory_symbol, 'timestamp': f'timestamp_{pair.factory_symbol}'}, inplace=True)
                 _data_add = _data_add.rename(columns={data['compare_param']: pair.factory_symbol})
                 _df_grp = _data_add.groupby(pd.Grouper(key='timestamp', freq=group_freq )).last()
                 df_param.append(_df_grp)
-                print('!',pair.factory_symbol, len(_data_add), len(_df_grp))
             df_chains_param.extend(df_param)
             print('**make df time:', time.time()-tik)
 
         if len(df_chains_param)  == 0:
             return render(request, 'blockchains/not_pair_events.html')
-        df_concat =  pd.concat(df_chains_param, axis=1)
+        df_concat =  pd.concat(df_chains_param, axis=1)                
+        dfs_tw = make_dfs_for_tw(df_concat)
         df_concat['time'] = df_concat.index.astype('str')
-    
-        # print(df_concat.head())
 
-        context['df'] = df_concat.iloc[::-1]
+        context['df'] = df_concat.iloc[::-1] # reverse
         context['compare_param'] = data['compare_param']
-        
+        context['datas_tw'] = dfs_tw
     return render(request, 'blockchains/compare_view.html', context)
 
 
