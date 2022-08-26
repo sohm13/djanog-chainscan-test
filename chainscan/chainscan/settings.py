@@ -84,12 +84,12 @@ WSGI_APPLICATION = 'chainscan.wsgi.application'
 
 
 DATABASES = {
-    'default': {
+    'sqllite': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'db.sqlite3',
     },
 
-    'user': {
+    'default': {
         'ENGINE':  os.environ.get("ENGINE", 'django.db.backends.sqlite3'),
         'NAME': os.environ.get("POSTGRES_NAME",  os.path.join(BASE_DIR, 'db.sqlite3')),
 

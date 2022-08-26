@@ -31,7 +31,6 @@ class Command(BaseCommand):
         pair_model = NETWORK_MODELS_MAP[network_name]['pair_model']
 
         qs_pairs = pair_model.objects.all()
-
         skip_tokens = [SkipToken(
             tokenb_address = qs_pair.token0,
             tokena_address = qs_pair.token1,
@@ -42,6 +41,7 @@ class Command(BaseCommand):
         new_pairs = await get_pairs_async(web3, TOKENS, TOKENS_MIXIN, FACTORIES, skip_tokens)
         print(f'new pairs: {len(new_pairs)}')
         if len(new_pairs) == 0:
+            print('not new pairs')
             return None
 
         pairs_prepare_for_db = [

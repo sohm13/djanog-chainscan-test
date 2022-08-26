@@ -4,6 +4,7 @@ import time
 import asyncio
 from web3 import Web3, AsyncHTTPProvider
 
+from django.core.exceptions import ObjectDoesNotExist
 
 from blockchains.models import NETWORK_MODELS_MAP
 
@@ -94,6 +95,7 @@ class Command(BaseCommand):
             data_blocks_for_db_save = [block_model(**block.dict()) for block in blocks_chain]
             log.info(f'data_blocks_for_db_save:{len(data_blocks_for_db_save)} and update block_model')
             obj = block_model.objects.bulk_create(data_blocks_for_db_save)
+            log.info(f'data_blocks_for_db_save DONE')
             # get updated data drom bd
             blocks_qs = block_model.objects.all()
         #########################
@@ -103,12 +105,15 @@ class Command(BaseCommand):
 
         data_for_db_save = []
         for pair_log in pair_logs:
-            log_for_db = sync_event_model(**pair_log.dict(),
-                updated_at=timezone.now(),
-                pair_model=pair_model.objects.get(pair_address=pair_log.pair_address),
-                block_model=blocks_qs.get(number=pair_log.block_number)
-                )
-            data_for_db_save.append(log_for_db)
+            try:
+                log_for_db = sync_event_model(**pair_log.dict(),
+                    updated_at=timezone.now(),
+                    pair_model=pair_model.objects.get(pair_address=pair_log.pair_address),
+                    block_model=blocks_qs.get(number=pair_log.block_number)
+                    )
+                data_for_db_save.append(log_for_db)
+            except blocks_qs.DoesNotExist as e:
+                log.error(f'{e} - pair_log')
 
 
         for qs_pair in qs_pairs:

@@ -1,9 +1,30 @@
 
+Тема; собирать и анализировать данные из блокчейнов типа bsc, eth
+Цель;
+``` 
+    [OK] научиться собирать и обрабатывать нужные данные с блокчейна
+    [OK] Забписвать их в бд и анализировать
+    [OK] Сделать визуальное отображения данных на сайти
+    [OK] Запустить сайт на серваке
 ```
-Смысл, собираем данные из блокченов(пример https://bscscan.com/),
-собираем траназкции где есть сделки(обмены токенов),
-собираем результаты обменов в бд
+Использовал;
 ```
+    web3 - для работы с блокченами
+    pandas - для анализа данных
+    django - для сайта
+    sqlite - как бд
+```
+Что дальше;
+```
+ Использовать postrges db
+ Оптимизировать запросы в bd
+ Оптимизировать изображения данных на страници
+ Оптимизировать обновления данных онлайн
+
+```
+
+
+Памятка;
 ```
 импользуем services.events_inspect_app обновляем дб;
     - management/commands/add_pairs -> to models.BaseEthPair
@@ -12,15 +33,7 @@
 services.events_inspect_app.events_inspect.config - настройки какие данные собирать
 ```
 
-```
-views:
-    BscListView from models.BaseEthPair
-    AuroraListView from models.BaseEthPair
-    bsc_pair_detail form models.BaseEthSyncEvent 
-    aurora_pair_detail form models.BaseEthSyncEvent 
-```
-
-  ### чтобы тестового запустить 
+  ### быстрый запуск
   ```
   pip install -r requirements.txt
   ### ongoing loop
